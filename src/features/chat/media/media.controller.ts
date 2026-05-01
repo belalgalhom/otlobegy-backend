@@ -29,12 +29,7 @@ export class ChatMediaController {
         if (ALL_ALLOWED_MIME_TYPES.has(file.mimetype)) {
           cb(null, true);
         } else {
-          cb(
-            new BadRequestException(
-              ChatMediaErrors.UNSUPPORTED_TYPE,
-            ),
-            false,
-          );
+          cb(new BadRequestException(ChatMediaErrors.UNSUPPORTED_TYPE), false);
         }
       },
     }),

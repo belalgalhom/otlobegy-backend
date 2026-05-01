@@ -10,7 +10,7 @@ import { BullModule } from '@nestjs/bullmq';
       useFactory: async (config: ConfigService) => ({
         connection: {
           url: config.get<string>('REDIS_URL'),
-          maxRetriesPerRequest: null, 
+          maxRetriesPerRequest: null,
         },
         defaultJobOptions: {
           attempts: 3,
@@ -18,7 +18,7 @@ import { BullModule } from '@nestjs/bullmq';
             type: 'exponential',
             delay: 2000,
           },
-          removeOnComplete: {count: 50},
+          removeOnComplete: { count: 50 },
           removeOnFail: {
             count: 100,
           },

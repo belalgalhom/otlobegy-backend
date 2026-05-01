@@ -25,7 +25,7 @@ import Redis from 'ioredis';
         ],
         storage: new ThrottlerStorageRedisService(
           new Redis(config.getOrThrow<string>('REDIS_URL'), {
-            db: 1, 
+            db: 1,
           }),
         ),
       }),

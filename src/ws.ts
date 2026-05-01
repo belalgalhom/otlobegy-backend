@@ -14,12 +14,14 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  app.use(helmet({
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: false,
-    hidePoweredBy: true,
-    xssFilter: true,
-  }));
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
+      contentSecurityPolicy: false,
+      hidePoweredBy: true,
+      xssFilter: true,
+    }),
+  );
 
   app.enableCors();
 

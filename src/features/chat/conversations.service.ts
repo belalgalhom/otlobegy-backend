@@ -6,7 +6,12 @@ import {
   Logger,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ConversationStatus, ConversationType, Role, Permission } from '@prisma/client';
+import {
+  ConversationStatus,
+  ConversationType,
+  Role,
+  Permission,
+} from '@prisma/client';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import {
   CreateOrderConversationDto,
@@ -14,7 +19,10 @@ import {
   QueryConversationsDto,
 } from './dto/chat.dto';
 import { JwtAccessPayload } from '../../common/interfaces/jwt-payload.interface';
-import { ChatConversationCreatedEvent, ChatConversationClosedEvent } from '../../common/events';
+import {
+  ChatConversationCreatedEvent,
+  ChatConversationClosedEvent,
+} from '../../common/events';
 import { EVENTS } from '../../common/events/event-names';
 import { ChatErrors } from '../../common/constants/response.constants';
 
@@ -27,7 +35,10 @@ export class ConversationsService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  private async canManageConversations(actorId: string, actorRole: Role): Promise<boolean> {
+  private async canManageConversations(
+    actorId: string,
+    actorRole: Role,
+  ): Promise<boolean> {
     if (actorRole === Role.SUPER_ADMIN) return true;
 
     const user = await this.prisma.user.findUnique({
@@ -35,9 +46,10 @@ export class ConversationsService {
       select: { permissions: true },
     });
 
-    return !!user && (
-      user.permissions.includes(Permission.MANAGE_CONVERSATIONS) ||
-      user.permissions.includes(Permission.MANAGE_TICKETS)
+    return (
+      !!user &&
+      (user.permissions.includes(Permission.MANAGE_CONVERSATIONS) ||
+        user.permissions.includes(Permission.MANAGE_TICKETS))
     );
   }
 
@@ -59,7 +71,9 @@ export class ConversationsService {
     if (!order) throw new NotFoundException(ChatErrors.ORDER_NOT_FOUND);
 
     const isCustomer = order.customer.userId === actor.sub;
-    const isVendorMember = actor.role === Role.VENDOR_MEMBER || (await this.canManageConversations(actor.sub, actor.role));
+    const isVendorMember =
+      actor.role === Role.VENDOR_MEMBER ||
+      (await this.canManageConversations(actor.sub, actor.role));
 
     if (!isCustomer && !isVendorMember) {
       throw new ForbiddenException(ChatErrors.NOT_AUTHORIZED);
@@ -111,7 +125,9 @@ export class ConversationsService {
       ),
     );
 
-    this.logger.log(`Order conversation created: ${conversation.id} (order ${dto.orderId})`);
+    this.logger.log(
+      `Order conversation created: ${conversation.id} (order ${dto.orderId})`,
+    );
     return this.formatConversation(conversation, actor.sub);
   }
 
@@ -164,7 +180,10 @@ export class ConversationsService {
     return this.formatConversation(conversation, actor.sub);
   }
 
-  async listMyConversations(actor: JwtAccessPayload, dto: QueryConversationsDto) {
+  async listMyConversations(
+    actor: JwtAccessPayload,
+    dto: QueryConversationsDto,
+  ) {
     const { page = 1, limit = 20 } = dto;
     const skip = (page - 1) * limit;
 
@@ -188,7 +207,9 @@ export class ConversationsService {
     ]);
 
     return {
-      conversations: conversations.map((c) => this.formatConversation(c, actor.sub)),
+      conversations: conversations.map((c) =>
+        this.formatConversation(c, actor.sub),
+      ),
       total,
       page,
       limit,
@@ -202,7 +223,8 @@ export class ConversationsService {
       include: this.conversationIncludes(actor.sub),
     });
 
-    if (!conversation) throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
+    if (!conversation)
+      throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
 
     await this.assertParticipant(conversation, actor);
     return this.formatConversation(conversation, actor.sub);
@@ -214,7 +236,8 @@ export class ConversationsService {
       include: { participants: true },
     });
 
-    if (!conversation) throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
+    if (!conversation)
+      throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
 
     await this.assertParticipant(conversation, actor);
 
@@ -231,7 +254,11 @@ export class ConversationsService {
 
     this.eventEmitter.emit(
       EVENTS.CHAT_CONVERSATION_CLOSED,
-      new ChatConversationClosedEvent(conversationId, participantIds, actor.sub),
+      new ChatConversationClosedEvent(
+        conversationId,
+        participantIds,
+        actor.sub,
+      ),
     );
 
     return updated;
@@ -242,7 +269,7 @@ export class ConversationsService {
     actor: JwtAccessPayload,
   ) {
     if (conversation.participants.some((p) => p.userId === actor.sub)) {
-      return; 
+      return;
     }
 
     const canManage = await this.canManageConversations(actor.sub, actor.role);
@@ -266,7 +293,15 @@ export class ConversationsService {
         orderBy: { createdAt: 'desc' as const },
         take: 1,
         include: {
-          sender: { select: { id: true, name: true, avatar: true, role: true, title: true } },
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              role: true,
+              title: true,
+            },
+          },
         },
       },
       _count: {

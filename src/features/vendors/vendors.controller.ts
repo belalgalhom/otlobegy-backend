@@ -59,10 +59,7 @@ export class VendorsController {
 
   @Patch(':vendorId')
   @RequirePermissions(Permission.MANAGE_VENDORS)
-  update(
-    @Param('vendorId') vendorId: string,
-    @Body() dto: UpdateVendorDto,
-  ) {
+  update(@Param('vendorId') vendorId: string, @Body() dto: UpdateVendorDto) {
     return this.service.update(vendorId, dto);
   }
 

@@ -11,12 +11,16 @@ export class RedisPubSubService implements OnModuleDestroy {
 
   constructor(config: ConfigService) {
     const url = config.getOrThrow<string>('REDIS_URL');
-    const options = { retryStrategy: (times: number) => Math.min(times * 50, 2000) };
+    const options = {
+      retryStrategy: (times: number) => Math.min(times * 50, 2000),
+    };
 
     this.publisher = new Redis(url, options);
     this.subscriber = new Redis(url, options);
 
-    this.publisher.on('connect', () => this.logger.log('✅ Redis publisher connected'));
+    this.publisher.on('connect', () =>
+      this.logger.log('✅ Redis publisher connected'),
+    );
 
     this.publisher.on('error', (err) => {
       if (err instanceof Error) {
@@ -26,7 +30,9 @@ export class RedisPubSubService implements OnModuleDestroy {
       }
     });
 
-    this.subscriber.on('connect', () => this.logger.log('✅ Redis subscriber connected'));
+    this.subscriber.on('connect', () =>
+      this.logger.log('✅ Redis subscriber connected'),
+    );
 
     this.subscriber.on('error', (err) => {
       if (err instanceof Error) {
@@ -39,15 +45,19 @@ export class RedisPubSubService implements OnModuleDestroy {
     this.subscriber.on('message', (channel, message) => {
       const channelHandlers = this.handlers.get(channel);
       if (!channelHandlers) return;
-      
+
       for (const handler of channelHandlers) {
         try {
           handler(message);
         } catch (err) {
           if (err instanceof Error) {
-            this.logger.error(`Handler error on channel [${channel}]: ${err.message}`);
+            this.logger.error(
+              `Handler error on channel [${channel}]: ${err.message}`,
+            );
           } else {
-            this.logger.error(`Handler error on channel [${channel}]: ${String(err)}`);
+            this.logger.error(
+              `Handler error on channel [${channel}]: ${String(err)}`,
+            );
           }
         }
       }
@@ -65,13 +75,17 @@ export class RedisPubSubService implements OnModuleDestroy {
   subscribe(channel: string, handler: (message: string) => void) {
     if (!this.handlers.has(channel)) {
       this.handlers.set(channel, new Set());
-      
+
       this.subscriber.subscribe(channel, (err) => {
         if (err) {
           if (err instanceof Error) {
-            this.logger.error(`Failed to subscribe to [${channel}]: ${err.message}`);
+            this.logger.error(
+              `Failed to subscribe to [${channel}]: ${err.message}`,
+            );
           } else {
-            this.logger.error(`Failed to subscribe to [${channel}]: ${String(err)}`);
+            this.logger.error(
+              `Failed to subscribe to [${channel}]: ${String(err)}`,
+            );
           }
         } else {
           this.logger.log(`✅ Subscribed to channel: ${channel}`);

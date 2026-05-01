@@ -14,8 +14,11 @@ export class JwtRtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
       passReqToCallback: true,
     });
   }
-  
-  validate(req: Request, payload: JwtRefreshPayload): {
+
+  validate(
+    req: Request,
+    payload: JwtRefreshPayload,
+  ): {
     payload: JwtRefreshPayload;
     rawRefreshToken: string;
   } {

@@ -27,41 +27,47 @@ export class ChatListener {
     const isSystem = event.type === MessageType.SYSTEM;
 
     const socketPayload = {
-      messageId:      event.messageId,
+      messageId: event.messageId,
       conversationId: event.conversationId,
-      senderId:       event.senderId,
-      type:           event.type,
-      text:           event.text,
-      mediaUrl:       event.mediaUrl,
-      metadata:       event.metadata,
+      senderId: event.senderId,
+      type: event.type,
+      text: event.text,
+      mediaUrl: event.mediaUrl,
+      metadata: event.metadata,
       isSystem,
-      createdAt:      event.createdAt,
+      createdAt: event.createdAt,
     };
 
     await Promise.allSettled(
       event.participantIds.map((userId) =>
-        this.socketService.emitToUser(userId, SOCKET_EVENTS.CHAT_MESSAGE, socketPayload),
+        this.socketService.emitToUser(
+          userId,
+          SOCKET_EVENTS.CHAT_MESSAGE,
+          socketPayload,
+        ),
       ),
     );
 
     if (isSystem) return;
 
-    const recipients = event.participantIds.filter((id) => id !== event.senderId);
-    const preview    = this.buildPreview(event);
+    const recipients = event.participantIds.filter(
+      (id) => id !== event.senderId,
+    );
+    const preview = this.buildPreview(event);
 
     for (const userId of recipients) {
       try {
         await this.notificationsService.create({
           userId,
-          title:   'New message',
+          title: 'New message',
           titleAr: 'رسالة جديدة',
-          body:    preview,
-          bodyAr:  null,
-          type:    NotificationType.CHAT_MESSAGE,
+          body: preview,
+          bodyAr: null,
+          type: NotificationType.CHAT_MESSAGE,
           data: {
             conversationId: event.conversationId,
-            messageId:      event.messageId,
-            senderId:       event.senderId,
+            messageId: event.messageId,
+            senderId: event.senderId,
           },
         });
       } catch (err: any) {
@@ -76,13 +82,17 @@ export class ChatListener {
   async handleConversationCreated(event: ChatConversationCreatedEvent) {
     const payload = {
       conversationId: event.conversationId,
-      type:           event.type,
-      orderId:        event.orderId,
+      type: event.type,
+      orderId: event.orderId,
     };
 
     await Promise.allSettled(
       event.participantIds.map((userId) =>
-        this.socketService.emitToUser(userId, SOCKET_EVENTS.CONVERSATION_CREATED, payload),
+        this.socketService.emitToUser(
+          userId,
+          SOCKET_EVENTS.CONVERSATION_CREATED,
+          payload,
+        ),
       ),
     );
   }
@@ -91,27 +101,38 @@ export class ChatListener {
   async handleConversationClosed(event: ChatConversationClosedEvent) {
     const payload = {
       conversationId: event.conversationId,
-      closedBy:       event.closedBy,
+      closedBy: event.closedBy,
     };
 
     await Promise.allSettled(
       event.participantIds.map((userId) =>
-        this.socketService.emitToUser(userId, SOCKET_EVENTS.CONVERSATION_CLOSED, payload),
+        this.socketService.emitToUser(
+          userId,
+          SOCKET_EVENTS.CONVERSATION_CLOSED,
+          payload,
+        ),
       ),
     );
   }
 
   private buildPreview(event: ChatMessageSentEvent): string {
     if (event.text) {
-      return event.text.length > 80 ? event.text.slice(0, 80) + '…' : event.text;
+      return event.text.length > 80
+        ? event.text.slice(0, 80) + '…'
+        : event.text;
     }
 
     switch (event.type as MessageType) {
-      case MessageType.IMAGE:    return 'Sent a photo';
-      case MessageType.VIDEO:    return 'Sent a video';
-      case MessageType.AUDIO:    return 'Sent a voice message';
-      case MessageType.LOCATION: return 'Shared a location';
-      default:                   return 'New message';
+      case MessageType.IMAGE:
+        return 'Sent a photo';
+      case MessageType.VIDEO:
+        return 'Sent a video';
+      case MessageType.AUDIO:
+        return 'Sent a voice message';
+      case MessageType.LOCATION:
+        return 'Shared a location';
+      default:
+        return 'New message';
     }
   }
 }

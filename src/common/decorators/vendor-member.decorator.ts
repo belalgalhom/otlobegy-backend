@@ -3,7 +3,7 @@ import { VendorMemberRole } from '@prisma/client';
 import { VendorMemberGuard } from '../guards/vendor-member.guard';
 
 export const VENDOR_MEMBER_ROLES_KEY = 'vendorMemberRoles';
-export const VENDOR_ID_PARAM_KEY     = 'vendorIdParam';
+export const VENDOR_ID_PARAM_KEY = 'vendorIdParam';
 
 export interface VendorMemberOptions {
   /**

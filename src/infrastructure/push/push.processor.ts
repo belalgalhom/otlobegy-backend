@@ -40,21 +40,31 @@ export class PushProcessor extends WorkerHost {
 
     switch (job.name) {
       case PUSH_JOBS.SEND_TO_TOPIC:
-        if (!topic) throw new UnrecoverableError('Topic is missing for send_topic job');
+        if (!topic)
+          throw new UnrecoverableError('Topic is missing for send_topic job');
         return this.handleSendToTopic(topic, notification, safeData);
 
       case PUSH_JOBS.SEND_TO_DEVICES:
-        if (!tokens || tokens.length === 0) return { skipped: true, reason: 'No tokens' };
+        if (!tokens || tokens.length === 0)
+          return { skipped: true, reason: 'No tokens' };
         return this.handleSendToDevices(tokens, notification, safeData);
 
       case PUSH_JOBS.SUBSCRIBE_TO_TOPIC:
-        if (!topic) throw new UnrecoverableError('Topic is missing for subscribe_topic job');
-        if (!tokens || tokens.length === 0) return { skipped: true, reason: 'No tokens' };
+        if (!topic)
+          throw new UnrecoverableError(
+            'Topic is missing for subscribe_topic job',
+          );
+        if (!tokens || tokens.length === 0)
+          return { skipped: true, reason: 'No tokens' };
         return this.handleSubscribe(tokens, topic);
 
       case PUSH_JOBS.UNSUBSCRIBE_FROM_TOPIC:
-        if (!topic) throw new UnrecoverableError('Topic is missing for unsubscribe_topic job');
-        if (!tokens || tokens.length === 0) return { skipped: true, reason: 'No tokens' };
+        if (!topic)
+          throw new UnrecoverableError(
+            'Topic is missing for unsubscribe_topic job',
+          );
+        if (!tokens || tokens.length === 0)
+          return { skipped: true, reason: 'No tokens' };
         return this.handleUnsubscribe(tokens, topic);
 
       default:
@@ -80,7 +90,10 @@ export class PushProcessor extends WorkerHost {
       this.logger.log(`✅ Topic message sent: ${messageId}`);
       return { success: true, messageId };
     } catch (error: any) {
-      this.logger.error(`❌ Topic send failed for [${topic}]: ${error.message}`, error.stack);
+      this.logger.error(
+        `❌ Topic send failed for [${topic}]: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -109,7 +122,10 @@ export class PushProcessor extends WorkerHost {
         failureCount += response.failureCount;
 
         response.responses.forEach((resp, idx) => {
-          if (!resp.success && INVALID_TOKEN_CODES.has(resp.error?.code ?? '')) {
+          if (
+            !resp.success &&
+            INVALID_TOKEN_CODES.has(resp.error?.code ?? '')
+          ) {
             const token = chunkTokens[idx];
             if (token) invalidTokens.push(token);
           }
@@ -125,23 +141,35 @@ export class PushProcessor extends WorkerHost {
     }
 
     if (batchErrors.length > 0) {
-      this.logger.warn(`⚠️ ${batchErrors.length}/${chunks.length} batches failed`);
+      this.logger.warn(
+        `⚠️ ${batchErrors.length}/${chunks.length} batches failed`,
+      );
 
       if (batchErrors.length === chunks.length) {
         throw new Error('All batches failed');
       }
     }
 
-    this.logger.log(`📊 Send result — success: ${successCount}, failed: ${failureCount}, removed: ${invalidTokens.length}`);
-    return { success: successCount, failed: failureCount, removed: invalidTokens.length };
+    this.logger.log(
+      `📊 Send result — success: ${successCount}, failed: ${failureCount}, removed: ${invalidTokens.length}`,
+    );
+    return {
+      success: successCount,
+      failed: failureCount,
+      removed: invalidTokens.length,
+    };
   }
 
   private async handleSubscribe(tokens: string[], topic: string) {
     const response = await this.messaging.subscribeToTopic(tokens, topic);
-    this.logger.log(`✅ Subscribed ${response.successCount} devices to [${topic}]`);
+    this.logger.log(
+      `✅ Subscribed ${response.successCount} devices to [${topic}]`,
+    );
 
     if (response.failureCount > 0) {
-      this.logger.warn(`⚠️ ${response.failureCount} subscriptions failed for [${topic}]`);
+      this.logger.warn(
+        `⚠️ ${response.failureCount} subscriptions failed for [${topic}]`,
+      );
       await this.handleSubscriptionErrors(tokens, response.errors);
     }
 
@@ -150,10 +178,14 @@ export class PushProcessor extends WorkerHost {
 
   private async handleUnsubscribe(tokens: string[], topic: string) {
     const response = await this.messaging.unsubscribeFromTopic(tokens, topic);
-    this.logger.log(`👋 Unsubscribed ${response.successCount} devices from [${topic}]`);
+    this.logger.log(
+      `👋 Unsubscribed ${response.successCount} devices from [${topic}]`,
+    );
 
     if (response.failureCount > 0) {
-      this.logger.warn(`⚠️ ${response.failureCount} unsubscriptions failed for [${topic}]`);
+      this.logger.warn(
+        `⚠️ ${response.failureCount} unsubscriptions failed for [${topic}]`,
+      );
       await this.handleSubscriptionErrors(tokens, response.errors);
     }
 
@@ -182,11 +214,16 @@ export class PushProcessor extends WorkerHost {
         where: { token: { in: unique } },
       });
     } catch (error: any) {
-      this.logger.error(`❌ Failed to cleanup tokens: ${error.message}`, error.stack);
+      this.logger.error(
+        `❌ Failed to cleanup tokens: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
-  private stringifyData(data: Record<string, any> | undefined): Record<string, string> {
+  private stringifyData(
+    data: Record<string, any> | undefined,
+  ): Record<string, string> {
     if (!data) return {};
     return Object.fromEntries(
       Object.entries(data).map(([k, v]) => [

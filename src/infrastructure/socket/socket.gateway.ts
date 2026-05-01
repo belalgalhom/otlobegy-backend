@@ -86,10 +86,14 @@ export class SocketGateway
   }
 
   handleConnection(client: Socket) {
-    this.logger.log(`✅ Client Connected: ${client.data.user?.sub} (${client.id})`);
+    this.logger.log(
+      `✅ Client Connected: ${client.data.user?.sub} (${client.id})`,
+    );
   }
 
   handleDisconnect(client: Socket) {
-    this.logger.log(`❌ Client Disconnected: ${client.data.user?.sub ?? 'unknown'} (${client.id})`);
+    this.logger.log(
+      `❌ Client Disconnected: ${client.data.user?.sub ?? 'unknown'} (${client.id})`,
+    );
   }
 }

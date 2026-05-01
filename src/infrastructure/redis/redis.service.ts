@@ -97,7 +97,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       return await this.client.ttl(key);
     } catch (error) {
-      this.logger.error(`Failed to get TTL for key "${key}"`, (error as Error).stack);
+      this.logger.error(
+        `Failed to get TTL for key "${key}"`,
+        (error as Error).stack,
+      );
       return -2;
     }
   }

@@ -1,15 +1,14 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { CreateVendorBranchDto, UpdateVendorBranchDto } from './dto/vendor-branch.dto';
+import {
+  CreateVendorBranchDto,
+  UpdateVendorBranchDto,
+} from './dto/vendor-branch.dto';
 import {
   VendorBranchErrors,
   VendorErrors,
-  CommonSuccess
+  CommonSuccess,
 } from 'src/common/constants/response.constants';
 import * as crypto from 'crypto';
 
@@ -133,12 +132,22 @@ export class VendorBranchesService {
       await this.prisma.vendorBranch.update({
         where: { id: branchId },
         data: {
-          ...(scalarFields.name    !== undefined && { name:    scalarFields.name }),
-          ...(scalarFields.nameAr  !== undefined && { nameAr:  scalarFields.nameAr }),
-          ...(scalarFields.address !== undefined && { address: scalarFields.address }),
-          ...(scalarFields.phone   !== undefined && { phone:   scalarFields.phone }),
-          ...(scalarFields.isOpen  !== undefined && { isOpen:  scalarFields.isOpen }),
-          ...(scalarFields.zoneId  !== undefined && { zoneId:  scalarFields.zoneId }),
+          ...(scalarFields.name !== undefined && { name: scalarFields.name }),
+          ...(scalarFields.nameAr !== undefined && {
+            nameAr: scalarFields.nameAr,
+          }),
+          ...(scalarFields.address !== undefined && {
+            address: scalarFields.address,
+          }),
+          ...(scalarFields.phone !== undefined && {
+            phone: scalarFields.phone,
+          }),
+          ...(scalarFields.isOpen !== undefined && {
+            isOpen: scalarFields.isOpen,
+          }),
+          ...(scalarFields.zoneId !== undefined && {
+            zoneId: scalarFields.zoneId,
+          }),
         },
       });
     }
@@ -161,7 +170,7 @@ export class VendorBranchesService {
 
   private async assertVendorExists(vendorId: string) {
     const vendor = await this.prisma.vendor.findFirst({
-      where:  { id: vendorId, deletedAt: null },
+      where: { id: vendorId, deletedAt: null },
       select: { id: true },
     });
     if (!vendor) throw new NotFoundException(VendorErrors.NOT_FOUND);

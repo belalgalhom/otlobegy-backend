@@ -6,7 +6,7 @@ import * as nodemailer from 'nodemailer';
 import * as dns from 'dns';
 import { promisify } from 'util';
 import { SendMailJob } from './mail.interface';
-import { QUEUES} from '../queue/queues.constants';
+import { QUEUES } from '../queue/queues.constants';
 
 const resolveMx = promisify(dns.resolveMx);
 
@@ -20,11 +20,7 @@ const NETWORK_ERROR_CODES = [
   'EADDRNOTAVAIL',
 ];
 
-const TRANSIENT_DNS_ERROR_CODES = [
-  'ENOTFOUND',
-  'EAI_AGAIN',
-  'ETIMEDOUT',
-];
+const TRANSIENT_DNS_ERROR_CODES = ['ENOTFOUND', 'EAI_AGAIN', 'ETIMEDOUT'];
 
 const SMTP_NAME_DEFAULT = 'App';
 
@@ -78,7 +74,8 @@ export class MailProcessor extends WorkerHost {
     try {
       await this.validateRecipientDomain(to);
 
-      const smtpName = this.config.get<string>('SMTP_NAME') || SMTP_NAME_DEFAULT;
+      const smtpName =
+        this.config.get<string>('SMTP_NAME') || SMTP_NAME_DEFAULT;
       const smtpUser = this.config.get<string>('SMTP_USER');
       const from = `"${smtpName}" <${smtpUser}>`;
 
@@ -93,12 +90,16 @@ export class MailProcessor extends WorkerHost {
   private async validateRecipientDomain(to: string): Promise<void> {
     const atIndex = to.lastIndexOf('@');
     if (atIndex === -1) {
-      throw new UnrecoverableError(`Invalid email address (no @ symbol): ${to}`);
+      throw new UnrecoverableError(
+        `Invalid email address (no @ symbol): ${to}`,
+      );
     }
 
     const domain = to.substring(atIndex + 1);
     if (!domain || domain.trim() === '') {
-      throw new UnrecoverableError(`Invalid email address (empty domain): ${to}`);
+      throw new UnrecoverableError(
+        `Invalid email address (empty domain): ${to}`,
+      );
     }
 
     if (domain === 'localhost') {
@@ -108,7 +109,9 @@ export class MailProcessor extends WorkerHost {
     try {
       const addresses = await resolveMx(domain);
       if (!addresses || addresses.length === 0) {
-        throw new UnrecoverableError(`No MX records found for domain: ${domain}`);
+        throw new UnrecoverableError(
+          `No MX records found for domain: ${domain}`,
+        );
       }
     } catch (dnsError: any) {
       if (dnsError instanceof UnrecoverableError) {
@@ -125,7 +128,9 @@ export class MailProcessor extends WorkerHost {
       this.logger.warn(
         `🚫 Permanent DNS failure for '${domain}' (${dnsError.code}). Blocking job.`,
       );
-      throw new UnrecoverableError(`Invalid domain '${domain}': ${dnsError.message}`);
+      throw new UnrecoverableError(
+        `Invalid domain '${domain}': ${dnsError.message}`,
+      );
     }
   }
 
@@ -166,7 +171,9 @@ export class MailProcessor extends WorkerHost {
 
     const isTemporary4xx = responseCode >= 400 && responseCode < 500;
     if (isTemporary4xx) {
-      this.logger.warn(`⏳ Temporary 4xx rejection (${responseCode}). BullMQ will retry.`);
+      this.logger.warn(
+        `⏳ Temporary 4xx rejection (${responseCode}). BullMQ will retry.`,
+      );
       throw error;
     }
 

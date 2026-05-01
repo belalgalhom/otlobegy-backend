@@ -1,9 +1,9 @@
-import { 
-  IsString, 
-  IsOptional, 
-  IsBoolean, 
-  IsNumber, 
-  IsArray, 
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+  IsArray,
   ArrayMinSize,
 } from 'class-validator';
 

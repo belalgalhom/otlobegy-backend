@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
-  
+
   readonly baseDir = path.join(process.cwd(), 'storage', 'uploads');
 
   constructor() {

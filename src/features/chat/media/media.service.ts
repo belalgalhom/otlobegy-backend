@@ -28,11 +28,11 @@ export class ChatMediaService {
 
   constructor(private readonly storage: StorageService) {}
 
-  async uploadChatMedia(file: Express.Multer.File): Promise<UploadedChatMediaResult> {
+  async uploadChatMedia(
+    file: Express.Multer.File,
+  ): Promise<UploadedChatMediaResult> {
     if (!ALL_ALLOWED_MIME_TYPES.has(file.mimetype)) {
-      throw new UnsupportedMediaTypeException(
-        ChatMediaErrors.UNSUPPORTED_TYPE,
-      );
+      throw new UnsupportedMediaTypeException(ChatMediaErrors.UNSUPPORTED_TYPE);
     }
 
     const config = this.getConfigByMime(file.mimetype);
@@ -42,15 +42,11 @@ export class ChatMediaService {
 
     const ext = path.extname(file.originalname).replace('.', '').toLowerCase();
     if (!config.extensions.includes(ext)) {
-      throw new BadRequestException(
-        ChatMediaErrors.EXTENSION_MISMATCH,
-      );
+      throw new BadRequestException(ChatMediaErrors.EXTENSION_MISMATCH);
     }
 
     if (file.size > config.maxSizeBytes) {
-      throw new PayloadTooLargeException(
-        ChatMediaErrors.FILE_TOO_LARGE,
-      );
+      throw new PayloadTooLargeException(ChatMediaErrors.FILE_TOO_LARGE);
     }
 
     const mediaUrl = await this.storage.upload(file, config.folder);
@@ -74,7 +70,8 @@ export class ChatMediaService {
 
   private getConfigByMime(mime: string): ChatMediaTypeConfig | null {
     return (
-      Object.values(MEDIA_CONFIGS).find((c) => c.mimeTypes.includes(mime)) ?? null
+      Object.values(MEDIA_CONFIGS).find((c) => c.mimeTypes.includes(mime)) ??
+      null
     );
   }
 

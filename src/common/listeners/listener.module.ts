@@ -5,15 +5,7 @@ import { NotificationListener } from './notification.listener';
 
 @Global()
 @Module({
-  providers: [
-    MailListener,
-    ChatListener,
-    NotificationListener,
-  ],
-  exports: [
-    MailListener,
-    ChatListener,
-    NotificationListener,
-  ],
+  providers: [MailListener, ChatListener, NotificationListener],
+  exports: [MailListener, ChatListener, NotificationListener],
 })
 export class ListenersModule {}

@@ -25,7 +25,7 @@ import * as path from 'path';
               winston.format.ms(),
               nestWinstonModuleUtilities.format.nestLike(appName, {
                 colors: true,
-                prettyPrint: true, 
+                prettyPrint: true,
               }),
             ),
           }),
@@ -34,7 +34,7 @@ import * as path from 'path';
         if (isProduction) {
           transports.push(
             new winston.transports.DailyRotateFile({
-              dirname: logDir, 
+              dirname: logDir,
               filename: 'error-%DATE%.log',
               datePattern: 'YYYY-MM-DD',
               zippedArchive: true,
@@ -43,7 +43,7 @@ import * as path from 'path';
               level: 'error',
               format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.json()
+                winston.format.json(),
               ),
             }),
 
@@ -57,7 +57,7 @@ import * as path from 'path';
               level: logLevel,
               format: winston.format.combine(
                 winston.format.timestamp(),
-                winston.format.json()
+                winston.format.json(),
               ),
             }),
           );

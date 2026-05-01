@@ -28,7 +28,7 @@ import type {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Guest()
   @Post('register')
@@ -83,10 +83,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(
-    @CurrentUser() user: JwtAccessPayload,
-    @Body() dto: LogoutDto,
-  ) {
+  logout(@CurrentUser() user: JwtAccessPayload, @Body() dto: LogoutDto) {
     return this.authService.logout(user.sub, user.sid, dto);
   }
 

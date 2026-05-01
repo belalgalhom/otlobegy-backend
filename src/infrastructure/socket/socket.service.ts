@@ -20,9 +20,13 @@ export class SocketService {
       await this.pubsub.publish(SOCKET_CHANNEL, JSON.stringify(payload));
     } catch (err) {
       if (err instanceof Error) {
-        this.logger.error(`Failed to publish socket event [${payload.event}]: ${err.message}`);
+        this.logger.error(
+          `Failed to publish socket event [${payload.event}]: ${err.message}`,
+        );
       } else {
-        this.logger.error(`Failed to publish socket event [${payload.event}]: ${String(err)}`);
+        this.logger.error(
+          `Failed to publish socket event [${payload.event}]: ${String(err)}`,
+        );
       }
     }
   }

@@ -10,7 +10,12 @@ export class PushService {
 
   constructor(@InjectQueue(QUEUES.PUSH) private pushQueue: Queue) {}
 
-  async sendToDevices(tokens: string[], title: string, body: string, data?: Record<string, string>) {
+  async sendToDevices(
+    tokens: string[],
+    title: string,
+    body: string,
+    data?: Record<string, string>,
+  ) {
     if (!tokens || tokens.length === 0) return;
 
     await this.addToQueue(PUSH_JOBS.SEND_TO_DEVICES, {
@@ -22,7 +27,12 @@ export class PushService {
     });
   }
 
-  async sendToTopic(topic: string, title: string, body: string, data?: Record<string, string>) {
+  async sendToTopic(
+    topic: string,
+    title: string,
+    body: string,
+    data?: Record<string, string>,
+  ) {
     await this.addToQueue(PUSH_JOBS.SEND_TO_TOPIC, {
       action: 'SEND',
       topic,
@@ -52,7 +62,10 @@ export class PushService {
     });
   }
 
-  private async addToQueue(jobName: string, payload: PushJob): Promise<boolean> {
+  private async addToQueue(
+    jobName: string,
+    payload: PushJob,
+  ): Promise<boolean> {
     try {
       await this.pushQueue.add(jobName, payload);
       this.logger.log(`🚀 Queued [${jobName}] job.`);

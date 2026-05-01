@@ -7,7 +7,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
-import { AddVendorMemberDto, UpdateVendorMemberRoleDto } from './dto/vendor-member.dto';
+import {
+  AddVendorMemberDto,
+  UpdateVendorMemberRoleDto,
+} from './dto/vendor-member.dto';
 import {
   VendorMemberErrors,
   VendorErrors,
@@ -27,16 +30,16 @@ export class VendorMembersService {
     await this.assertVendorExists(vendorId);
 
     return this.prisma.vendorMember.findMany({
-      where:   { vendorId },
+      where: { vendorId },
       orderBy: { createdAt: 'asc' },
       include: {
         user: {
           select: {
-            id:     true,
-            name:   true,
-            email:  true,
+            id: true,
+            name: true,
+            email: true,
             avatar: true,
-            title:  true,
+            title: true,
             titleAr: true,
           },
         },
@@ -53,7 +56,7 @@ export class VendorMembersService {
     await this.assertVendorExists(vendorId);
 
     const user = await this.prisma.user.findUnique({
-      where:  { id: dto.userId },
+      where: { id: dto.userId },
       select: { id: true },
     });
     if (!user) throw new NotFoundException(VendorMemberErrors.USER_NOT_FOUND);
@@ -61,13 +64,14 @@ export class VendorMembersService {
     const existing = await this.prisma.vendorMember.findUnique({
       where: { vendorId_userId: { vendorId, userId: dto.userId } },
     });
-    if (existing) throw new ConflictException(VendorMemberErrors.ALREADY_MEMBER);
+    if (existing)
+      throw new ConflictException(VendorMemberErrors.ALREADY_MEMBER);
 
     const member = await this.prisma.vendorMember.create({
       data: {
         vendorId,
         userId: dto.userId,
-        role:   dto.role,
+        role: dto.role,
       },
       include: {
         user: {
@@ -85,13 +89,17 @@ export class VendorMembersService {
 
   // ─── Update a member's role ───────────────────────────────────────────────
 
-  async updateRole(vendorId: string, memberId: string, dto: UpdateVendorMemberRoleDto) {
+  async updateRole(
+    vendorId: string,
+    memberId: string,
+    dto: UpdateVendorMemberRoleDto,
+  ) {
     const member = await this.findMember(vendorId, memberId);
 
     // Cannot demote the last OWNER — there must always be at least one.
     if (
       member.role === VendorMemberRole.OWNER &&
-      dto.role    !== VendorMemberRole.OWNER
+      dto.role !== VendorMemberRole.OWNER
     ) {
       const ownerCount = await this.prisma.vendorMember.count({
         where: { vendorId, role: VendorMemberRole.OWNER },
@@ -104,7 +112,7 @@ export class VendorMembersService {
 
     return this.prisma.vendorMember.update({
       where: { id: memberId },
-      data:  { role: dto.role },
+      data: { role: dto.role },
       include: {
         user: {
           select: { id: true, name: true, email: true, avatar: true },
@@ -152,7 +160,7 @@ export class VendorMembersService {
 
   private async assertVendorExists(vendorId: string) {
     const vendor = await this.prisma.vendor.findFirst({
-      where:  { id: vendorId, deletedAt: null },
+      where: { id: vendorId, deletedAt: null },
       select: { id: true },
     });
     if (!vendor) throw new NotFoundException(VendorErrors.NOT_FOUND);

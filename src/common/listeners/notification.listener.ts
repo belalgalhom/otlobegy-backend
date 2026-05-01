@@ -6,11 +6,11 @@ import { NotificationType, TicketStatus } from '@prisma/client';
 import { NotificationsService } from '../../features/notifications/notifications.service';
 
 const TICKET_STATUS_LABELS: Record<TicketStatus, { en: string; ar: string }> = {
-  [TicketStatus.OPEN]:            { en: 'Open',           ar: 'مفتوحة' },
-  [TicketStatus.IN_PROGRESS]:     { en: 'In Progress',    ar: 'قيد المعالجة' },
+  [TicketStatus.OPEN]: { en: 'Open', ar: 'مفتوحة' },
+  [TicketStatus.IN_PROGRESS]: { en: 'In Progress', ar: 'قيد المعالجة' },
   [TicketStatus.WAITING_ON_USER]: { en: 'Waiting on You', ar: 'في انتظارك' },
-  [TicketStatus.RESOLVED]:        { en: 'Resolved',       ar: 'تم الحل' },
-  [TicketStatus.CLOSED]:          { en: 'Closed',         ar: 'مغلقة' },
+  [TicketStatus.RESOLVED]: { en: 'Resolved', ar: 'تم الحل' },
+  [TicketStatus.CLOSED]: { en: 'Closed', ar: 'مغلقة' },
 };
 
 @Injectable()
@@ -27,16 +27,16 @@ export class NotificationListener {
 
     try {
       await this.notificationsService.create({
-        userId:  event.creatorId,
-        title:   `Ticket #${event.ticketNumber} Updated`,
+        userId: event.creatorId,
+        title: `Ticket #${event.ticketNumber} Updated`,
         titleAr: `تم تحديث التذكرة #${event.ticketNumber}`,
-        body:    `Your ticket status has been changed to: ${label.en}`,
-        bodyAr:  `تم تغيير حالة تذكرتك إلى: ${label.ar}`,
-        type:    NotificationType.TICKET_UPDATE,
+        body: `Your ticket status has been changed to: ${label.en}`,
+        bodyAr: `تم تغيير حالة تذكرتك إلى: ${label.ar}`,
+        type: NotificationType.TICKET_UPDATE,
         data: {
-          ticketId:     event.ticketId,
+          ticketId: event.ticketId,
           ticketNumber: event.ticketNumber,
-          status:       event.status,
+          status: event.status,
         },
       });
 

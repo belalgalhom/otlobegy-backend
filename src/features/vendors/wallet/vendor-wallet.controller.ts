@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { VendorWalletService } from './vendor-wallet.service';
 import { QueryVendorWalletDto } from './dto/vendor-wallet.dto';
 import { VendorMember } from '../../../common/decorators/vendor-member.decorator';

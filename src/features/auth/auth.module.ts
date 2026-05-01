@@ -7,9 +7,7 @@ import { JwtRtStrategy } from './strategies/jwt-rt.strategy';
 import { GuestGuard } from '../../common/guards/guest.guard';
 
 @Module({
-  imports: [
-    OtpModule,
-  ],
+  imports: [OtpModule],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtRtStrategy, GuestGuard],
   exports: [AuthService],

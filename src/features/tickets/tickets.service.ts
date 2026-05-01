@@ -13,7 +13,13 @@ import {
   UpdateTicketDto,
   QueryTicketsDto,
 } from './dto/ticket.dto';
-import { ConversationStatus, ConversationType, Role, TicketStatus, Permission } from '@prisma/client';
+import {
+  ConversationStatus,
+  ConversationType,
+  Role,
+  TicketStatus,
+  Permission,
+} from '@prisma/client';
 import { TicketErrors } from '../../common/constants/response.constants';
 import { TicketStatusUpdatedEvent } from '../../common/events';
 import { EVENTS } from '../../common/events/event-names';
@@ -33,7 +39,10 @@ export class TicketsService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  private async canManageTickets(actorId: string, actorRole: Role): Promise<boolean> {
+  private async canManageTickets(
+    actorId: string,
+    actorRole: Role,
+  ): Promise<boolean> {
     if (actorRole === Role.SUPER_ADMIN) return true;
 
     const user = await this.prisma.user.findUnique({
@@ -45,11 +54,14 @@ export class TicketsService {
   }
 
   async create(actor: JwtAccessPayload, dto: CreateTicketDto) {
-    if (!CREATOR_ROLES.has(actor.role) && !(await this.canManageTickets(actor.sub, actor.role))) {
+    if (
+      !CREATOR_ROLES.has(actor.role) &&
+      !(await this.canManageTickets(actor.sub, actor.role))
+    ) {
       throw new ForbiddenException(TicketErrors.CANNOT_CREATE);
     }
 
-    if (dto.orderId)  await this.assertOrderExists(dto.orderId);
+    if (dto.orderId) await this.assertOrderExists(dto.orderId);
     if (dto.vendorId) await this.assertVendorExists(dto.vendorId);
 
     const ticketNumber = await this.generateTicketNumber();
@@ -58,21 +70,21 @@ export class TicketsService {
       const created = await tx.supportTicket.create({
         data: {
           ticketNumber,
-          subject:     dto.subject,
+          subject: dto.subject,
           description: dto.description ?? null,
-          category:    dto.category,
-          priority:    dto.priority,
-          status:      TicketStatus.OPEN,
-          creatorId:   actor.sub,
-          orderId:     dto.orderId  ?? null,
-          vendorId:    dto.vendorId ?? null,
+          category: dto.category,
+          priority: dto.priority,
+          status: TicketStatus.OPEN,
+          creatorId: actor.sub,
+          orderId: dto.orderId ?? null,
+          vendorId: dto.vendorId ?? null,
         },
       });
 
       const conversation = await tx.conversation.create({
         data: {
-          type:     ConversationType.SUPPORT,
-          status:   ConversationStatus.OPEN,
+          type: ConversationType.SUPPORT,
+          status: ConversationStatus.OPEN,
           vendorId: dto.vendorId ?? null,
           participants: {
             create: [{ userId: actor.sub }],
@@ -82,14 +94,16 @@ export class TicketsService {
 
       const updated = await tx.supportTicket.update({
         where: { id: created.id },
-        data:  { conversationId: conversation.id },
+        data: { conversationId: conversation.id },
         include: this.ticketIncludes(),
       });
 
       return updated;
     });
 
-    this.logger.log(`Ticket created: ${ticket.ticketNumber} by user ${actor.sub}`);
+    this.logger.log(
+      `Ticket created: ${ticket.ticketNumber} by user ${actor.sub}`,
+    );
     return this.formatTicket(ticket);
   }
 
@@ -104,11 +118,11 @@ export class TicketsService {
     if (!canManageAll) {
       where.creatorId = actor.sub;
     } else {
-      if (dto.creatorId)  where.creatorId  = dto.creatorId;
+      if (dto.creatorId) where.creatorId = dto.creatorId;
       if (dto.assigneeId) where.assigneeId = dto.assigneeId;
     }
 
-    if (dto.status)   where.status   = dto.status;
+    if (dto.status) where.status = dto.status;
     if (dto.priority) where.priority = dto.priority;
     if (dto.category) where.category = dto.category;
 
@@ -134,7 +148,7 @@ export class TicketsService {
 
   async getOne(actor: JwtAccessPayload, ticketId: string) {
     const ticket = await this.prisma.supportTicket.findUnique({
-      where:   { id: ticketId },
+      where: { id: ticketId },
       include: this.ticketIncludes(),
     });
 
@@ -144,7 +158,11 @@ export class TicketsService {
     return this.formatTicket(ticket);
   }
 
-  async update(actor: JwtAccessPayload, ticketId: string, dto: UpdateTicketDto) {
+  async update(
+    actor: JwtAccessPayload,
+    ticketId: string,
+    dto: UpdateTicketDto,
+  ) {
     const ticket = await this.prisma.supportTicket.findUnique({
       where: { id: ticketId },
     });
@@ -152,7 +170,7 @@ export class TicketsService {
     if (!ticket) throw new NotFoundException(TicketErrors.NOT_FOUND);
 
     const canManageAll = await this.canManageTickets(actor.sub, actor.role);
-    const isCreator    = ticket.creatorId === actor.sub;
+    const isCreator = ticket.creatorId === actor.sub;
 
     if (!canManageAll && !isCreator) {
       throw new ForbiddenException(TicketErrors.CANNOT_UPDATE);
@@ -181,12 +199,14 @@ export class TicketsService {
       const result = await tx.supportTicket.update({
         where: { id: ticketId },
         data: {
-          ...(dto.subject      !== undefined && { subject:      dto.subject }),
-          ...(dto.description  !== undefined && { description:  dto.description }),
-          ...(dto.status       !== undefined && { status:       dto.status }),
-          ...(dto.priority     !== undefined && { priority:     dto.priority }),
-          ...(dto.category     !== undefined && { category:     dto.category }),
-          ...(dto.assigneeId   !== undefined && { assigneeId:   dto.assigneeId }),
+          ...(dto.subject !== undefined && { subject: dto.subject }),
+          ...(dto.description !== undefined && {
+            description: dto.description,
+          }),
+          ...(dto.status !== undefined && { status: dto.status }),
+          ...(dto.priority !== undefined && { priority: dto.priority }),
+          ...(dto.category !== undefined && { category: dto.category }),
+          ...(dto.assigneeId !== undefined && { assigneeId: dto.assigneeId }),
         },
         include: this.ticketIncludes(),
       });
@@ -196,7 +216,7 @@ export class TicketsService {
           where: {
             conversationId_userId: {
               conversationId: result.conversationId,
-              userId:         dto.assigneeId,
+              userId: dto.assigneeId,
             },
           },
         });
@@ -205,7 +225,7 @@ export class TicketsService {
           await tx.conversationParticipant.create({
             data: {
               conversationId: result.conversationId,
-              userId:         dto.assigneeId,
+              userId: dto.assigneeId,
             },
           });
         }
@@ -218,7 +238,7 @@ export class TicketsService {
         if (result.conversationId) {
           await tx.conversation.update({
             where: { id: result.conversationId },
-            data:  { status: ConversationStatus.CLOSED },
+            data: { status: ConversationStatus.CLOSED },
           });
         }
       }
@@ -239,7 +259,9 @@ export class TicketsService {
       );
     }
 
-    this.logger.log(`Ticket ${ticket.ticketNumber} updated by user ${actor.sub}`);
+    this.logger.log(
+      `Ticket ${ticket.ticketNumber} updated by user ${actor.sub}`,
+    );
     return this.formatTicket(updated);
   }
 
@@ -256,7 +278,9 @@ export class TicketsService {
 
     await this.prisma.supportTicket.delete({ where: { id: ticketId } });
 
-    this.logger.log(`Ticket ${ticket.ticketNumber} deleted by manager ${actor.sub}`);
+    this.logger.log(
+      `Ticket ${ticket.ticketNumber} deleted by manager ${actor.sub}`,
+    );
     return { deleted: true };
   }
 
@@ -270,7 +294,7 @@ export class TicketsService {
 
   private async assertOrderExists(orderId: string) {
     const order = await this.prisma.order.findUnique({
-      where:  { id: orderId },
+      where: { id: orderId },
       select: { id: true },
     });
     if (!order) throw new NotFoundException(TicketErrors.ORDER_NOT_FOUND);
@@ -278,7 +302,7 @@ export class TicketsService {
 
   private async assertVendorExists(vendorId: string) {
     const vendor = await this.prisma.vendor.findUnique({
-      where:  { id: vendorId },
+      where: { id: vendorId },
       select: { id: true },
     });
     if (!vendor) throw new NotFoundException(TicketErrors.VENDOR_NOT_FOUND);
@@ -286,17 +310,19 @@ export class TicketsService {
 
   private async assertAssigneeCanManage(assigneeId: string) {
     const user = await this.prisma.user.findUnique({
-      where:  { id: assigneeId },
+      where: { id: assigneeId },
       select: { role: true, permissions: true },
     });
 
-    if (!user) throw new BadRequestException(TicketErrors.ASSIGNEE_MUST_BE_ADMIN);
+    if (!user)
+      throw new BadRequestException(TicketErrors.ASSIGNEE_MUST_BE_ADMIN);
 
     const canManage =
       user.role === Role.SUPER_ADMIN ||
       user.permissions.includes(Permission.MANAGE_TICKETS);
 
-    if (!canManage) throw new BadRequestException(TicketErrors.ASSIGNEE_MUST_BE_ADMIN);
+    if (!canManage)
+      throw new BadRequestException(TicketErrors.ASSIGNEE_MUST_BE_ADMIN);
   }
 
   private async assertAccess(
@@ -330,21 +356,21 @@ export class TicketsService {
 
   private formatTicket(ticket: any) {
     return {
-      id:             ticket.id,
-      ticketNumber:   ticket.ticketNumber,
-      subject:        ticket.subject,
-      description:    ticket.description,
-      status:         ticket.status,
-      category:       ticket.category,
-      priority:       ticket.priority,
-      creator:        ticket.creator,
-      assignee:       ticket.assignee       ?? null,
-      order:          ticket.order          ?? null,
-      vendor:         ticket.vendor         ?? null,
+      id: ticket.id,
+      ticketNumber: ticket.ticketNumber,
+      subject: ticket.subject,
+      description: ticket.description,
+      status: ticket.status,
+      category: ticket.category,
+      priority: ticket.priority,
+      creator: ticket.creator,
+      assignee: ticket.assignee ?? null,
+      order: ticket.order ?? null,
+      vendor: ticket.vendor ?? null,
       conversationId: ticket.conversationId ?? null,
-      conversation:   ticket.conversation   ?? null,
-      createdAt:      ticket.createdAt,
-      updatedAt:      ticket.updatedAt,
+      conversation: ticket.conversation ?? null,
+      createdAt: ticket.createdAt,
+      updatedAt: ticket.updatedAt,
     };
   }
 }

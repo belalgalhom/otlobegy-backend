@@ -23,8 +23,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const { messageKey, errors } = this.extractError(exception);
 
-    const requestId = request.headers['x-request-id'] as string || 'unknown';
-    
+    const requestId = (request.headers['x-request-id'] as string) || 'unknown';
+
     const path = request.originalUrl;
 
     this.logError(exception, status, request, messageKey, requestId, path);
@@ -72,9 +72,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       if (Array.isArray(res.message)) {
         messageKey = CommonErrors.VALIDATION_ERROR;
         errors = this.parseValidationErrors(res.message);
-      }
-
-      else if (res.message) {
+      } else if (res.message) {
         messageKey = res.message;
       }
     }

@@ -31,14 +31,20 @@ export class RedisIoAdapter extends IoAdapter {
     const pubClient = new Redis(redisUrl, options);
     const subClient = new Redis(redisUrl, options);
 
-    pubClient.on('error', (err) => this.logger.error('Redis Pub Client Error:', err));
-    subClient.on('error', (err) => this.logger.error('Redis Sub Client Error:', err));
+    pubClient.on('error', (err) =>
+      this.logger.error('Redis Pub Client Error:', err),
+    );
+    subClient.on('error', (err) =>
+      this.logger.error('Redis Sub Client Error:', err),
+    );
 
-    await Promise.all([pubClient.connect(), subClient.connect()]).catch((err) => {
-      pubClient.disconnect();
-      subClient.disconnect();
-      throw err;
-    });
+    await Promise.all([pubClient.connect(), subClient.connect()]).catch(
+      (err) => {
+        pubClient.disconnect();
+        subClient.disconnect();
+        throw err;
+      },
+    );
 
     this.logger.log('✅ Redis Pub/Sub Clients Connected');
     this.adapterConstructor = createAdapter(pubClient, subClient);
@@ -46,7 +52,9 @@ export class RedisIoAdapter extends IoAdapter {
 
   createIOServer(port: number, options?: ServerOptions): any {
     if (!this.adapterConstructor) {
-      throw new Error('Redis adapter not initialized. Call connectToRedis() first.');
+      throw new Error(
+        'Redis adapter not initialized. Call connectToRedis() first.',
+      );
     }
     const server = super.createIOServer(port, options);
     server.adapter(this.adapterConstructor);

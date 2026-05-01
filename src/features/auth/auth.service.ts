@@ -27,7 +27,10 @@ import {
   JwtAccessPayload,
   JwtRefreshPayload,
 } from '../../common/interfaces/jwt-payload.interface';
-import { AuthErrors, CommonSuccess } from '../../common/constants/response.constants';
+import {
+  AuthErrors,
+  CommonSuccess,
+} from '../../common/constants/response.constants';
 import {
   JWT_ACCESS_SERVICE,
   JWT_REFRESH_SERVICE,
@@ -95,7 +98,9 @@ export class AuthService {
 
     if (user.isBanned) {
       throw new UnauthorizedException(
-        user.banReason ? `${AuthErrors.BANNED}: ${user.banReason}` : AuthErrors.BANNED,
+        user.banReason
+          ? `${AuthErrors.BANNED}: ${user.banReason}`
+          : AuthErrors.BANNED,
       );
     }
 
@@ -130,7 +135,11 @@ export class AuthService {
 
     const isValid = isPasswordReset
       ? await this.otpService.peekOtp(dto.contact, dto.code, 'PASSWORD_RESET')
-      : await this.otpService.validateOtp(dto.contact, dto.code, 'VERIFICATION');
+      : await this.otpService.validateOtp(
+          dto.contact,
+          dto.code,
+          'VERIFICATION',
+        );
 
     if (!isValid) throw new BadRequestException(AuthErrors.OTP_INVALID);
 
@@ -144,7 +153,7 @@ export class AuthService {
         },
       });
     }
-    
+
     return { message: CommonSuccess.OPERATION_SUCCESS };
   }
 
@@ -161,7 +170,10 @@ export class AuthService {
     const method = isEmail ? 'EMAIL' : ('SMS' as const);
 
     await this.otpService.deleteOtp(dto.contact, 'PASSWORD_RESET');
-    const code = await this.otpService.generateOtp(dto.contact, 'PASSWORD_RESET');
+    const code = await this.otpService.generateOtp(
+      dto.contact,
+      'PASSWORD_RESET',
+    );
 
     this.eventEmitter.emit(
       'auth.otp.requested',
@@ -198,7 +210,13 @@ export class AuthService {
       where: { id: payload.sid },
       include: {
         user: {
-          select: { id: true, role: true, isBanned: true, banReason: true, isEmailVerified: true },
+          select: {
+            id: true,
+            role: true,
+            isBanned: true,
+            banReason: true,
+            isEmailVerified: true,
+          },
         },
       },
     });
@@ -222,7 +240,9 @@ export class AuthService {
 
     if (user.isBanned) {
       throw new UnauthorizedException(
-        user.banReason ? `${AuthErrors.BANNED}: ${user.banReason}` : AuthErrors.BANNED,
+        user.banReason
+          ? `${AuthErrors.BANNED}: ${user.banReason}`
+          : AuthErrors.BANNED,
       );
     }
 
@@ -256,8 +276,9 @@ export class AuthService {
     verified: boolean,
     meta?: { ipAddress?: string; userAgent?: string },
   ) {
-    const refreshExpiresIn =
-      this.config.getOrThrow<string>('JWT_REFRESH_EXPIRATION');
+    const refreshExpiresIn = this.config.getOrThrow<string>(
+      'JWT_REFRESH_EXPIRATION',
+    );
 
     const expiresAt = this.parseExpiry(refreshExpiresIn);
 

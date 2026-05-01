@@ -10,7 +10,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { VendorBranchesService } from './vendor-branches.service';
-import { CreateVendorBranchDto, UpdateVendorBranchDto } from './dto/vendor-branch.dto';
+import {
+  CreateVendorBranchDto,
+  UpdateVendorBranchDto,
+} from './dto/vendor-branch.dto';
 import { VendorMember } from '../../../common/decorators/vendor-member.decorator';
 import { RequirePermissions } from '../../../common/decorators/permissions.decorator';
 import { Public } from '../../../common/decorators/public.decorator';

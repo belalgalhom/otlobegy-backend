@@ -8,7 +8,10 @@ export type OtpPurpose = 'VERIFICATION' | 'PASSWORD_RESET';
 export class OtpService {
   constructor(private redis: RedisService) {}
 
-  async generateOtp(identifier: string, purpose: OtpPurpose = 'VERIFICATION'): Promise<string> {
+  async generateOtp(
+    identifier: string,
+    purpose: OtpPurpose = 'VERIFICATION',
+  ): Promise<string> {
     const code = crypto.randomInt(100000, 999999).toString();
     const key = `otp:${purpose.toLowerCase()}:${identifier}`;
 
@@ -17,7 +20,11 @@ export class OtpService {
     return code;
   }
 
-  async validateOtp(identifier: string, code: string, purpose: OtpPurpose = 'VERIFICATION'): Promise<boolean> {
+  async validateOtp(
+    identifier: string,
+    code: string,
+    purpose: OtpPurpose = 'VERIFICATION',
+  ): Promise<boolean> {
     const key = `otp:${purpose.toLowerCase()}:${identifier}`;
     const storedCode = await this.redis.get(key);
 
@@ -27,13 +34,20 @@ export class OtpService {
     return true;
   }
 
-  async peekOtp(identifier: string, code: string, purpose: OtpPurpose = 'VERIFICATION'): Promise<boolean> {
+  async peekOtp(
+    identifier: string,
+    code: string,
+    purpose: OtpPurpose = 'VERIFICATION',
+  ): Promise<boolean> {
     const key = `otp:${purpose.toLowerCase()}:${identifier}`;
     const storedCode = await this.redis.get(key);
     return storedCode === code;
   }
 
-  async deleteOtp(identifier: string, purpose: OtpPurpose = 'VERIFICATION'): Promise<void> {
+  async deleteOtp(
+    identifier: string,
+    purpose: OtpPurpose = 'VERIFICATION',
+  ): Promise<void> {
     const key = `otp:${purpose.toLowerCase()}:${identifier}`;
     await this.redis.del(key);
   }

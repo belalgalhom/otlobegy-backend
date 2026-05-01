@@ -20,7 +20,7 @@ export class CreateVendorVerticalDto {
   @IsOptional()
   @MaxLength(100)
   nameAr?: string;
-  
+
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)

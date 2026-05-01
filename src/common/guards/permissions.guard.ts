@@ -10,7 +10,7 @@ import { Permission } from '@prisma/client';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { JwtAccessPayload } from '../interfaces/jwt-payload.interface';
-import { Role } from "@prisma/client";
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -24,7 +24,7 @@ export class PermissionsGuard implements CanActivate {
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
     );
-    
+
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
     }
@@ -51,7 +51,7 @@ export class PermissionsGuard implements CanActivate {
       );
 
       if (!hasAll) throw new ForbiddenException();
-      
+
       return true;
     }
 

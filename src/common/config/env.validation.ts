@@ -1,11 +1,11 @@
 import { plainToInstance } from 'class-transformer';
-import { 
-  IsEnum, 
-  IsNumber, 
-  IsString, 
-  IsEmail, 
-  IsOptional, 
-  validateSync 
+import {
+  IsEnum,
+  IsNumber,
+  IsString,
+  IsEmail,
+  IsOptional,
+  validateSync,
 } from 'class-validator';
 
 enum Environment {
@@ -74,23 +74,23 @@ class EnvironmentVariables {
 }
 
 export function envValidate(config: Record<string, unknown>) {
-  const validatedConfig = plainToInstance(
-    EnvironmentVariables,
-    config,
-    { enableImplicitConversion: true },
-  );
+  const validatedConfig = plainToInstance(EnvironmentVariables, config, {
+    enableImplicitConversion: true,
+  });
 
-  const errors = validateSync(validatedConfig, { 
-    skipMissingProperties: false 
+  const errors = validateSync(validatedConfig, {
+    skipMissingProperties: false,
   });
 
   if (errors.length > 0) {
-    const formattedErrors = errors.map(err => {
-      const constraints = err.constraints || {}; 
+    const formattedErrors = errors.map((err) => {
+      const constraints = err.constraints || {};
       return `\n❌ ${err.property}: ${Object.values(constraints).join(', ')}`;
     });
-    
-    throw new Error(`\n⚠️  ENVIRONMENT CONFIGURATION ERROR ⚠️${formattedErrors.join('')}\n`);
+
+    throw new Error(
+      `\n⚠️  ENVIRONMENT CONFIGURATION ERROR ⚠️${formattedErrors.join('')}\n`,
+    );
   }
 
   return validatedConfig;

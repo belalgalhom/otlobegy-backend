@@ -20,10 +20,18 @@ export const FirebaseMessagingProvider: Provider = {
     }
 
     const existing = admin.apps.find((app) => app?.name === FIREBASE_APP_NAME);
-    const app = existing ?? admin.initializeApp(
-      { credential: admin.credential.cert({ projectId, clientEmail, privateKey }) },
-      FIREBASE_APP_NAME,
-    );
+    const app =
+      existing ??
+      admin.initializeApp(
+        {
+          credential: admin.credential.cert({
+            projectId,
+            clientEmail,
+            privateKey,
+          }),
+        },
+        FIREBASE_APP_NAME,
+      );
 
     return getMessaging(app);
   },

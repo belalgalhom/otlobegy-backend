@@ -1,5 +1,13 @@
-import { 
-  Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto, UpdateZoneDto, CheckLocationDto } from './dto/zone.dto';
@@ -16,7 +24,7 @@ export class ZonesController {
   create(@Body() createZoneDto: CreateZoneDto) {
     return this.zonesService.createZone(createZoneDto);
   }
-  
+
   @Get()
   findAll() {
     return this.zonesService.getAllZones();

@@ -23,9 +23,10 @@ export class VendorMemberGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context
-      .switchToHttp()
-      .getRequest<{ user?: JwtAccessPayload; params: Record<string, string> }>();
+    const request = context.switchToHttp().getRequest<{
+      user?: JwtAccessPayload;
+      params: Record<string, string>;
+    }>();
 
     const user = request.user;
     if (!user?.sub) throw new UnauthorizedException();
@@ -37,7 +38,7 @@ export class VendorMemberGuard implements CanActivate {
     // all vendors without needing to be a member of any specific one.
     if (user.role === Role.ADMIN) {
       const dbUser = await this.prisma.user.findUnique({
-        where:  { id: user.sub },
+        where: { id: user.sub },
         select: { permissions: true },
       });
 
@@ -45,10 +46,11 @@ export class VendorMemberGuard implements CanActivate {
     }
 
     // Resolve which route param holds the vendor id.
-    const vendorIdParam = this.reflector.getAllAndOverride<string>(
-      VENDOR_ID_PARAM_KEY,
-      [context.getHandler(), context.getClass()],
-    ) ?? 'vendorId';
+    const vendorIdParam =
+      this.reflector.getAllAndOverride<string>(VENDOR_ID_PARAM_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? 'vendorId';
 
     const vendorId = request.params[vendorIdParam];
 
@@ -62,7 +64,7 @@ export class VendorMemberGuard implements CanActivate {
     // Confirm the vendor exists before checking membership so we return 404
     // rather than a misleading 403 when the vendor id is simply wrong.
     const vendor = await this.prisma.vendor.findUnique({
-      where:  { id: vendorId },
+      where: { id: vendorId },
       select: { id: true },
     });
 
@@ -80,17 +82,18 @@ export class VendorMemberGuard implements CanActivate {
       throw new ForbiddenException('You are not a member of this vendor');
     }
 
-    const requiredRoles = this.reflector.getAllAndOverride<VendorMemberRole[]>(
-      VENDOR_MEMBER_ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    ) ?? [];
+    const requiredRoles =
+      this.reflector.getAllAndOverride<VendorMemberRole[]>(
+        VENDOR_MEMBER_ROLES_KEY,
+        [context.getHandler(), context.getClass()],
+      ) ?? [];
 
     if (requiredRoles.length > 0 && !requiredRoles.includes(membership.role)) {
       throw new ForbiddenException(
         `This action requires one of the following vendor roles: ${requiredRoles.join(', ')}`,
       );
     }
-    
+
     (request as any).vendorMemberRole = membership.role;
 
     return true;

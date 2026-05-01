@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import { QueryVendorWalletDto } from './dto/vendor-wallet.dto';
 import { VendorErrors } from 'src/common/constants/response.constants';
@@ -18,7 +15,7 @@ export class VendorWalletService {
    */
   async getBalance(vendorId: string) {
     const vendor = await this.prisma.vendor.findFirst({
-      where:  { id: vendorId, deletedAt: null },
+      where: { id: vendorId, deletedAt: null },
       select: { id: true, walletBalance: true },
     });
 
@@ -38,7 +35,7 @@ export class VendorWalletService {
 
     // Confirm vendor exists first so we return 404 rather than an empty list.
     const vendor = await this.prisma.vendor.findFirst({
-      where:  { id: vendorId, deletedAt: null },
+      where: { id: vendorId, deletedAt: null },
       select: { id: true, walletBalance: true },
     });
     if (!vendor) throw new NotFoundException(VendorErrors.NOT_FOUND);

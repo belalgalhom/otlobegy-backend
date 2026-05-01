@@ -10,7 +10,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { VendorVerticalsService } from 'src/features/vendors/verticals/vendor-verticals.service';
-import { CreateVendorVerticalDto, UpdateVendorVerticalDto } from 'src/features/vendors/verticals/dto/vendor-vertical.dto';
+import {
+  CreateVendorVerticalDto,
+  UpdateVendorVerticalDto,
+} from 'src/features/vendors/verticals/dto/vendor-vertical.dto';
 import { RequirePermissions } from '../../../common/decorators/permissions.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import { Permission } from '@prisma/client';

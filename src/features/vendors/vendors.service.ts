@@ -13,7 +13,10 @@ import {
   QueryVendorsDto,
 } from './dto/vendor.dto';
 
-import { CommonSuccess, VendorErrors } from 'src/common/constants/response.constants';
+import {
+  CommonSuccess,
+  VendorErrors,
+} from 'src/common/constants/response.constants';
 
 @Injectable()
 export class VendorsService {
@@ -31,13 +34,13 @@ export class VendorsService {
 
     return this.prisma.vendor.create({
       data: {
-        storeName:     dto.storeName,
-        storeNameAr:   dto.storeNameAr   ?? null,
+        storeName: dto.storeName,
+        storeNameAr: dto.storeNameAr ?? null,
         slug,
-        description:   dto.description   ?? null,
+        description: dto.description ?? null,
         descriptionAr: dto.descriptionAr ?? null,
-        verticalId:    dto.verticalId,
-        taxId:         dto.taxId         ?? null,
+        verticalId: dto.verticalId,
+        taxId: dto.taxId ?? null,
         commissionRate: dto.commissionRate ?? 10.0,
       },
       include: this.vendorIncludes(),
@@ -52,11 +55,11 @@ export class VendorsService {
 
     const where: any = { deletedAt: null };
 
-    if (dto.status)     where.status     = dto.status;
+    if (dto.status) where.status = dto.status;
     if (dto.verticalId) where.verticalId = dto.verticalId;
     if (dto.search) {
       where.OR = [
-        { storeName:   { contains: dto.search, mode: 'insensitive' } },
+        { storeName: { contains: dto.search, mode: 'insensitive' } },
         { storeNameAr: { contains: dto.search, mode: 'insensitive' } },
       ];
     }
@@ -83,7 +86,7 @@ export class VendorsService {
 
   async findOne(id: string) {
     const vendor = await this.prisma.vendor.findFirst({
-      where:   { id, deletedAt: null },
+      where: { id, deletedAt: null },
       include: this.vendorIncludes(),
     });
     if (!vendor) throw new NotFoundException(VendorErrors.NOT_FOUND);
@@ -92,7 +95,7 @@ export class VendorsService {
 
   async findBySlug(slug: string) {
     const vendor = await this.prisma.vendor.findFirst({
-      where:   { slug, deletedAt: null },
+      where: { slug, deletedAt: null },
       include: this.vendorIncludes(),
     });
     if (!vendor) throw new NotFoundException(VendorErrors.NOT_FOUND);
@@ -112,13 +115,17 @@ export class VendorsService {
     return this.prisma.vendor.update({
       where: { id },
       data: {
-        ...(dto.storeName     !== undefined && { storeName:     dto.storeName }),
-        ...(dto.storeNameAr   !== undefined && { storeNameAr:   dto.storeNameAr }),
-        ...(dto.description   !== undefined && { description:   dto.description }),
-        ...(dto.descriptionAr !== undefined && { descriptionAr: dto.descriptionAr }),
-        ...(dto.verticalId    !== undefined && { verticalId:    dto.verticalId }),
-        ...(dto.taxId         !== undefined && { taxId:         dto.taxId }),
-        ...(dto.commissionRate !== undefined && { commissionRate: dto.commissionRate }),
+        ...(dto.storeName !== undefined && { storeName: dto.storeName }),
+        ...(dto.storeNameAr !== undefined && { storeNameAr: dto.storeNameAr }),
+        ...(dto.description !== undefined && { description: dto.description }),
+        ...(dto.descriptionAr !== undefined && {
+          descriptionAr: dto.descriptionAr,
+        }),
+        ...(dto.verticalId !== undefined && { verticalId: dto.verticalId }),
+        ...(dto.taxId !== undefined && { taxId: dto.taxId }),
+        ...(dto.commissionRate !== undefined && {
+          commissionRate: dto.commissionRate,
+        }),
       },
       include: this.vendorIncludes(),
     });
@@ -128,8 +135,8 @@ export class VendorsService {
     await this.findOne(id);
 
     return this.prisma.vendor.update({
-      where:   { id },
-      data:    { status: dto.status },
+      where: { id },
+      data: { status: dto.status },
       include: this.vendorIncludes(),
     });
   }
@@ -148,7 +155,7 @@ export class VendorsService {
 
     await this.prisma.vendor.update({
       where: { id },
-      data:  { logo: logoUrl },
+      data: { logo: logoUrl },
     });
 
     return { logo: logoUrl };
@@ -166,7 +173,7 @@ export class VendorsService {
 
     await this.prisma.vendor.update({
       where: { id },
-      data:  { coverImage: coverUrl },
+      data: { coverImage: coverUrl },
     });
 
     return { coverImage: coverUrl };
@@ -179,7 +186,7 @@ export class VendorsService {
 
     await this.prisma.vendor.update({
       where: { id },
-      data:  { deletedAt: new Date() },
+      data: { deletedAt: new Date() },
     });
 
     return { message: CommonSuccess.RESOURCE_DELETED };
@@ -200,12 +207,12 @@ export class VendorsService {
       .replace(/-+/g, '-')
       .slice(0, 80);
 
-    let slug  = base;
+    let slug = base;
     let count = 2;
 
     while (true) {
       const existing = await this.prisma.vendor.findUnique({
-        where:  { slug },
+        where: { slug },
         select: { id: true },
       });
 
@@ -221,7 +228,13 @@ export class VendorsService {
   private vendorIncludes() {
     return {
       vertical: {
-        select: { id: true, name: true, nameAr: true, slug: true, iconUrl: true },
+        select: {
+          id: true,
+          name: true,
+          nameAr: true,
+          slug: true,
+          iconUrl: true,
+        },
       },
     };
   }

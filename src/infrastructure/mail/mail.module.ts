@@ -7,7 +7,11 @@ import { QUEUES } from '../queue/queues.constants';
 @Global()
 @Module({})
 export class MailModule {
-  static register({ enableWorker = false }: { enableWorker: boolean }): DynamicModule {
+  static register({
+    enableWorker = false,
+  }: {
+    enableWorker: boolean;
+  }): DynamicModule {
     const providers: Provider[] = [MailService];
 
     if (enableWorker) {

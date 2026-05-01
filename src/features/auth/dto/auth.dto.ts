@@ -1,11 +1,11 @@
-import { 
-  IsEmail, 
-  IsString, 
-  IsPhoneNumber, 
-  IsOptional, 
-  IsEnum, 
-  IsNotEmpty, 
-  MinLength 
+import {
+  IsEmail,
+  IsString,
+  IsPhoneNumber,
+  IsOptional,
+  IsEnum,
+  IsNotEmpty,
+  MinLength,
 } from 'class-validator';
 
 export class LoginDto {

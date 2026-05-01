@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { CreateAddressDto, UpdateAddressDto } from './dto/customer.dto';
 import { CustomerErrors } from 'src/common/constants/response.constants';
@@ -79,7 +83,11 @@ export class CustomersService {
     return address;
   }
 
-  async updateAddress(userId: string, addressId: string, dto: UpdateAddressDto) {
+  async updateAddress(
+    userId: string,
+    addressId: string,
+    dto: UpdateAddressDto,
+  ) {
     const customer = await this.getCustomerByUserId(userId);
 
     const address = await this.prisma.address.findFirst({
@@ -122,7 +130,8 @@ export class CustomersService {
       where: { id: addressId, customerId: customer.id },
     });
 
-    if (result.count === 0) throw new NotFoundException(CustomerErrors.ADDRESS_NOT_FOUND);
+    if (result.count === 0)
+      throw new NotFoundException(CustomerErrors.ADDRESS_NOT_FOUND);
     return { success: true };
   }
 
@@ -138,8 +147,11 @@ export class CustomersService {
       return { isFavorite: false };
     }
 
-    const vendor = await this.prisma.vendor.findUnique({ where: { id: vendorId } });
-    if (!vendor) throw new NotFoundException(CustomerErrors.FAVORITE_VENDOR_NOT_FOUND);
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id: vendorId },
+    });
+    if (!vendor)
+      throw new NotFoundException(CustomerErrors.FAVORITE_VENDOR_NOT_FOUND);
 
     await this.prisma.favoriteVendor.create({
       data: { customerId: customer.id, vendorId },
@@ -159,8 +171,11 @@ export class CustomersService {
       return { isFavorite: false };
     }
 
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
-    if (!product) throw new NotFoundException(CustomerErrors.FAVORITE_PRODUCT_NOT_FOUND);
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+    if (!product)
+      throw new NotFoundException(CustomerErrors.FAVORITE_PRODUCT_NOT_FOUND);
 
     await this.prisma.favoriteProduct.create({
       data: { customerId: customer.id, productId },
@@ -174,16 +189,22 @@ export class CustomersService {
     const [vendors, products] = await Promise.all([
       this.prisma.favoriteVendor.findMany({
         where: { customerId: customer.id },
-        include: { vendor: { select: { id: true, storeName: true, logo: true } } },
+        include: {
+          vendor: { select: { id: true, storeName: true, logo: true } },
+        },
       }),
       this.prisma.favoriteProduct.findMany({
         where: { customerId: customer.id },
-        include: { product: { select: { id: true, name: true, imageUrl: true, basePrice: true } } },
+        include: {
+          product: {
+            select: { id: true, name: true, imageUrl: true, basePrice: true },
+          },
+        },
       }),
     ]);
 
     return {
-      vendors:  vendors.map((v) => v.vendor),
+      vendors: vendors.map((v) => v.vendor),
       products: products.map((p) => p.product),
     };
   }

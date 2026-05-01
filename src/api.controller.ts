@@ -6,6 +6,6 @@ export class ApiController {
   @Get()
   @Public()
   root() {
-    return { message: 'ok'};
+    return { message: 'ok' };
   }
 }

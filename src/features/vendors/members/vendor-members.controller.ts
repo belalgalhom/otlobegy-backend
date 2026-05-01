@@ -10,7 +10,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { VendorMembersService } from './vendor-members.service';
-import { AddVendorMemberDto, UpdateVendorMemberRoleDto } from './dto/vendor-member.dto';
+import {
+  AddVendorMemberDto,
+  UpdateVendorMemberRoleDto,
+} from './dto/vendor-member.dto';
 import { VendorMember } from '../../../common/decorators/vendor-member.decorator';
 import { RequirePermissions } from '../../../common/decorators/permissions.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';

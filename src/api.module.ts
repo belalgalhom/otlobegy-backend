@@ -43,7 +43,7 @@ import { ListenersModule } from './common/listeners/listener.module';
       envFilePath: '.env',
       validate: envValidate,
     }),
-    PrismaModule, 
+    PrismaModule,
     LoggerModule,
     JwtConfigModule,
     QueueModule,
@@ -55,7 +55,7 @@ import { ListenersModule } from './common/listeners/listener.module';
     EventsModule,
     MailModule.register({ enableWorker: false }),
     PushModule.register({ enableWorker: false }),
-    
+
     AuthModule,
     DevicesModule,
     UsersModule,
@@ -75,7 +75,7 @@ import { ListenersModule } from './common/listeners/listener.module';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    
+
     {
       provide: APP_GUARD,
       useClass: VerifiedGuard,

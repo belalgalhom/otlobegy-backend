@@ -47,19 +47,13 @@ export class ConversationsController {
   }
 
   @Get(':id')
-  getOne(
-    @CurrentUser() actor: JwtAccessPayload,
-    @Param('id') id: string,
-  ) {
+  getOne(@CurrentUser() actor: JwtAccessPayload, @Param('id') id: string) {
     return this.conversationsService.getConversation(actor, id);
   }
 
   @Patch(':id/close')
   @HttpCode(HttpStatus.OK)
-  close(
-    @CurrentUser() actor: JwtAccessPayload,
-    @Param('id') id: string,
-  ) {
+  close(@CurrentUser() actor: JwtAccessPayload, @Param('id') id: string) {
     return this.conversationsService.closeConversation(actor, id);
   }
 }

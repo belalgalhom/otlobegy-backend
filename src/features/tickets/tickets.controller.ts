@@ -24,26 +24,17 @@ export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
   @Post()
-  create(
-    @CurrentUser() actor: JwtAccessPayload,
-    @Body() dto: CreateTicketDto,
-  ) {
+  create(@CurrentUser() actor: JwtAccessPayload, @Body() dto: CreateTicketDto) {
     return this.ticketsService.create(actor, dto);
   }
 
   @Get()
-  list(
-    @CurrentUser() actor: JwtAccessPayload,
-    @Query() dto: QueryTicketsDto,
-  ) {
+  list(@CurrentUser() actor: JwtAccessPayload, @Query() dto: QueryTicketsDto) {
     return this.ticketsService.list(actor, dto);
   }
 
   @Get(':id')
-  getOne(
-    @CurrentUser() actor: JwtAccessPayload,
-    @Param('id') id: string,
-  ) {
+  getOne(@CurrentUser() actor: JwtAccessPayload, @Param('id') id: string) {
     return this.ticketsService.getOne(actor, id);
   }
 
@@ -59,10 +50,7 @@ export class TicketsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  remove(
-    @CurrentUser() actor: JwtAccessPayload,
-    @Param('id') id: string,
-  ) {
+  remove(@CurrentUser() actor: JwtAccessPayload, @Param('id') id: string) {
     return this.ticketsService.remove(actor, id);
   }
 }

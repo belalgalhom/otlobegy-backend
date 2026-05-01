@@ -16,10 +16,10 @@ import { Language, NotificationType } from '@prisma/client';
 import { NotificationErrors } from '../../common/constants/response.constants';
 
 export const SOCKET_EVENTS = {
-  NOTIFICATION:         'notification.new',
-  CHAT_MESSAGE:         'chat.message',
+  NOTIFICATION: 'notification.new',
+  CHAT_MESSAGE: 'chat.message',
   CONVERSATION_CREATED: 'conversation.created',
-  CONVERSATION_CLOSED:  'conversation.closed',
+  CONVERSATION_CLOSED: 'conversation.closed',
 } as const;
 
 @Injectable()
@@ -35,35 +35,39 @@ export class NotificationsService {
   async create(dto: CreateNotificationDto) {
     const notification = await this.prisma.notification.create({
       data: {
-        userId:  dto.userId,
-        title:   dto.title,
+        userId: dto.userId,
+        title: dto.title,
         titleAr: dto.titleAr ?? null,
-        body:    dto.body    ?? null,
-        bodyAr:  dto.bodyAr  ?? null,
-        type:    dto.type as NotificationType,
-        data:    dto.data,
-        isRead:  false,
+        body: dto.body ?? null,
+        bodyAr: dto.bodyAr ?? null,
+        type: dto.type,
+        data: dto.data,
+        isRead: false,
       },
     });
 
-    await this.socketService.emitToUser(dto.userId, SOCKET_EVENTS.NOTIFICATION, {
-      id:        notification.id,
-      title:     notification.title,
-      titleAr:   notification.titleAr,
-      body:      notification.body,
-      bodyAr:    notification.bodyAr,
-      type:      notification.type,
-      data:      notification.data,
-      createdAt: notification.createdAt,
-    });
+    await this.socketService.emitToUser(
+      dto.userId,
+      SOCKET_EVENTS.NOTIFICATION,
+      {
+        id: notification.id,
+        title: notification.title,
+        titleAr: notification.titleAr,
+        body: notification.body,
+        bodyAr: notification.bodyAr,
+        type: notification.type,
+        data: notification.data,
+        createdAt: notification.createdAt,
+      },
+    );
 
     await this.dispatchPush(
       dto.userId,
-      dto.type as NotificationType,
+      dto.type,
       dto.title,
       dto.titleAr ?? null,
-      dto.body    ?? null,
-      dto.bodyAr  ?? null,
+      dto.body ?? null,
+      dto.bodyAr ?? null,
       dto.data as Record<string, string> | undefined,
     );
 
@@ -86,11 +90,11 @@ export class NotificationsService {
         devices: { select: { token: true } },
         notificationSettings: {
           select: {
-            pushEnabled:   true,
-            orderUpdates:  true,
-            chatMessages:  true,
-            promotions:    true,
-            system:        true,
+            pushEnabled: true,
+            orderUpdates: true,
+            chatMessages: true,
+            promotions: true,
+            system: true,
             ticketUpdates: true,
           },
         },
@@ -104,7 +108,9 @@ export class NotificationsService {
 
     if (user.notificationSettings) {
       if (!this.isTypeAllowed(type, user.notificationSettings)) {
-        this.logger.debug(`Push suppressed for user ${userId}: type ${type} disabled`);
+        this.logger.debug(
+          `Push suppressed for user ${userId}: type ${type} disabled`,
+        );
         return;
       }
     }
@@ -114,10 +120,10 @@ export class NotificationsService {
       return;
     }
 
-    const isArabic    = user.language === Language.AR;
-    const pushTitle   = isArabic ? (titleAr ?? title)        : title;
-    const pushBody    = isArabic ? (bodyAr  ?? body ?? '')   : (body ?? '');
-    const tokens      = user.devices.map((d) => d.token);
+    const isArabic = user.language === Language.AR;
+    const pushTitle = isArabic ? (titleAr ?? title) : title;
+    const pushBody = isArabic ? (bodyAr ?? body ?? '') : (body ?? '');
+    const tokens = user.devices.map((d) => d.token);
 
     await this.pushService.sendToDevices(tokens, pushTitle, pushBody, data);
 
@@ -129,24 +135,30 @@ export class NotificationsService {
   private isTypeAllowed(
     type: NotificationType,
     settings: {
-      pushEnabled:   boolean;
-      orderUpdates:  boolean;
-      chatMessages:  boolean;
-      promotions:    boolean;
-      system:        boolean;
+      pushEnabled: boolean;
+      orderUpdates: boolean;
+      chatMessages: boolean;
+      promotions: boolean;
+      system: boolean;
       ticketUpdates: boolean;
     },
   ): boolean {
     if (!settings.pushEnabled) return false;
 
     switch (type) {
-      case NotificationType.ORDER_UPDATE:  return settings.orderUpdates;
-      case NotificationType.CHAT_MESSAGE:  return settings.chatMessages;
-      case NotificationType.PROMOTION:     return settings.promotions;
+      case NotificationType.ORDER_UPDATE:
+        return settings.orderUpdates;
+      case NotificationType.CHAT_MESSAGE:
+        return settings.chatMessages;
+      case NotificationType.PROMOTION:
+        return settings.promotions;
       case NotificationType.SYSTEM:
-      case NotificationType.PAYMENT:       return settings.system;
-      case NotificationType.TICKET_UPDATE: return settings.ticketUpdates;
-      default:                             return true;
+      case NotificationType.PAYMENT:
+        return settings.system;
+      case NotificationType.TICKET_UPDATE:
+        return settings.ticketUpdates;
+      default:
+        return true;
     }
   }
 
@@ -156,7 +168,7 @@ export class NotificationsService {
 
     const where: any = { userId };
     if (unreadOnly) where.isRead = false;
-    if (type)       where.type   = type;
+    if (type) where.type = type;
 
     const [notifications, total, unreadCount] = await Promise.all([
       this.prisma.notification.findMany({
@@ -184,7 +196,8 @@ export class NotificationsService {
       where: { id: notificationId },
     });
 
-    if (!notification) throw new NotFoundException(NotificationErrors.NOT_FOUND);
+    if (!notification)
+      throw new NotFoundException(NotificationErrors.NOT_FOUND);
     if (notification.userId !== userId) throw new ForbiddenException();
 
     return notification;
@@ -224,7 +237,8 @@ export class NotificationsService {
       where: { id: notificationId },
     });
 
-    if (!notification) throw new NotFoundException(NotificationErrors.NOT_FOUND);
+    if (!notification)
+      throw new NotFoundException(NotificationErrors.NOT_FOUND);
     if (notification.userId !== userId) throw new ForbiddenException();
 
     if (notification.isRead) return notification;
@@ -240,7 +254,8 @@ export class NotificationsService {
       where: { id: notificationId },
     });
 
-    if (!notification) throw new NotFoundException(NotificationErrors.NOT_FOUND);
+    if (!notification)
+      throw new NotFoundException(NotificationErrors.NOT_FOUND);
     if (notification.userId !== userId) throw new ForbiddenException();
 
     await this.prisma.notification.delete({ where: { id: notificationId } });

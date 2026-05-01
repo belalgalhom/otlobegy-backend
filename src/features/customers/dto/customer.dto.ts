@@ -1,12 +1,12 @@
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsOptional, 
-  IsBoolean, 
-  IsArray, 
-  ArrayMinSize, 
-  ArrayMaxSize, 
-  IsNumber 
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  ArrayMinSize,
+  ArrayMaxSize,
+  IsNumber,
 } from 'class-validator';
 
 export class CreateAddressDto {

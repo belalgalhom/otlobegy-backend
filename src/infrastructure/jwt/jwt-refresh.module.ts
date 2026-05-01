@@ -10,7 +10,11 @@ import { StringValue } from 'ms';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        signOptions: { expiresIn: config.getOrThrow<string>('JWT_REFRESH_EXPIRATION') as StringValue },
+        signOptions: {
+          expiresIn: config.getOrThrow<string>(
+            'JWT_REFRESH_EXPIRATION',
+          ) as StringValue,
+        },
       }),
     }),
   ],

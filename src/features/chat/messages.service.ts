@@ -23,10 +23,10 @@ const MEDIA_TYPES = new Set<MessageType>([
 // Minimal snapshot of the replied-to message shown inline
 const REPLY_TO_INCLUDE = {
   select: {
-    id:        true,
-    type:      true,
-    text:      true,
-    mediaUrl:  true,
+    id: true,
+    type: true,
+    text: true,
+    mediaUrl: true,
     deletedAt: true,
     sender: {
       select: { id: true, name: true, avatar: true },
@@ -57,10 +57,14 @@ export class MessagesService {
       include: { participants: true },
     });
 
-    if (!conversation) throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
+    if (!conversation)
+      throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
 
-    const isParticipant = conversation.participants.some((p) => p.userId === actor.sub);
-    if (!isParticipant) throw new ForbiddenException(ChatErrors.NOT_A_PARTICIPANT);
+    const isParticipant = conversation.participants.some(
+      (p) => p.userId === actor.sub,
+    );
+    if (!isParticipant)
+      throw new ForbiddenException(ChatErrors.NOT_A_PARTICIPANT);
 
     if (conversation.status !== ConversationStatus.OPEN) {
       throw new BadRequestException(ChatErrors.CONVERSATION_CLOSED);
@@ -87,27 +91,35 @@ export class MessagesService {
       const msg = await tx.message.create({
         data: {
           conversationId,
-          senderId:  actor.sub,
-          type:      dto.type,
-          text:      dto.text     ?? null,
-          mediaUrl:  dto.mediaUrl ?? null,
-          metadata:  (dto.metadata as Record<string, any>) ?? undefined,
+          senderId: actor.sub,
+          type: dto.type,
+          text: dto.text ?? null,
+          mediaUrl: dto.mediaUrl ?? null,
+          metadata: (dto.metadata as Record<string, any>) ?? undefined,
           replyToId: dto.replyToId ?? null,
         },
         include: {
-          sender:  { select: { id: true, name: true, avatar: true, role: true, title: true } },
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              role: true,
+              title: true,
+            },
+          },
           replyTo: REPLY_TO_INCLUDE,
         },
       });
 
       await tx.conversation.update({
         where: { id: conversationId },
-        data:  { updatedAt: new Date() },
+        data: { updatedAt: new Date() },
       });
 
       await tx.conversationParticipant.update({
         where: { conversationId_userId: { conversationId, userId: actor.sub } },
-        data:  { lastReadAt: msg.createdAt },
+        data: { lastReadAt: msg.createdAt },
       });
 
       return msg;
@@ -130,7 +142,9 @@ export class MessagesService {
       ),
     );
 
-    this.logger.log(`Message sent: ${message.id} [${message.type}] in ${conversationId}`);
+    this.logger.log(
+      `Message sent: ${message.id} [${message.type}] in ${conversationId}`,
+    );
     return this.formatMessage(message);
   }
 
@@ -141,16 +155,21 @@ export class MessagesService {
   ) {
     const conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
-      select: { id: true, status: true, participants: { select: { userId: true } } },
+      select: {
+        id: true,
+        status: true,
+        participants: { select: { userId: true } },
+      },
     });
 
-    if (!conversation || conversation.status !== ConversationStatus.OPEN) return null;
+    if (!conversation || conversation.status !== ConversationStatus.OPEN)
+      return null;
 
     const message = await this.prisma.message.create({
       data: {
         conversationId,
         senderId: 'system',
-        type:     MessageType.SYSTEM,
+        type: MessageType.SYSTEM,
         text,
         metadata: metadata ?? undefined,
       },
@@ -186,10 +205,14 @@ export class MessagesService {
       include: { participants: true },
     });
 
-    if (!conversation) throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
+    if (!conversation)
+      throw new NotFoundException(ChatErrors.CONVERSATION_NOT_FOUND);
 
-    const isParticipant = conversation.participants.some((p) => p.userId === actor.sub);
-    if (!isParticipant) throw new ForbiddenException(ChatErrors.NOT_A_PARTICIPANT);
+    const isParticipant = conversation.participants.some(
+      (p) => p.userId === actor.sub,
+    );
+    if (!isParticipant)
+      throw new ForbiddenException(ChatErrors.NOT_A_PARTICIPANT);
 
     const { before, limit = 30 } = dto;
 
@@ -213,18 +236,29 @@ export class MessagesService {
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {
-        sender:  { select: { id: true, name: true, avatar: true, role: true, title: true } },
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            role: true,
+            title: true,
+          },
+        },
         replyTo: REPLY_TO_INCLUDE,
       },
     });
 
-    const ordered       = [...messages].reverse();
-    const myParticipant = conversation.participants.find((p) => p.userId === actor.sub);
+    const ordered = [...messages].reverse();
+    const myParticipant = conversation.participants.find(
+      (p) => p.userId === actor.sub,
+    );
 
     return {
-      messages:    ordered.map((m) => this.formatMessage(m)),
-      hasMore:     messages.length === limit,
-      nextCursor:  messages.length === limit ? messages[messages.length - 1].id : null,
+      messages: ordered.map((m) => this.formatMessage(m)),
+      hasMore: messages.length === limit,
+      nextCursor:
+        messages.length === limit ? messages[messages.length - 1].id : null,
       myLastReadAt: myParticipant?.lastReadAt ?? null,
     };
   }
@@ -238,7 +272,8 @@ export class MessagesService {
       where: { conversationId_userId: { conversationId, userId: actor.sub } },
     });
 
-    if (!participant) throw new ForbiddenException(ChatErrors.NOT_A_PARTICIPANT);
+    if (!participant)
+      throw new ForbiddenException(ChatErrors.NOT_A_PARTICIPANT);
 
     let readAt = new Date();
 
@@ -255,7 +290,7 @@ export class MessagesService {
 
     await this.prisma.conversationParticipant.update({
       where: { conversationId_userId: { conversationId, userId: actor.sub } },
-      data:  { lastReadAt: readAt },
+      data: { lastReadAt: readAt },
     });
 
     return { lastReadAt: readAt };
@@ -263,7 +298,7 @@ export class MessagesService {
 
   async deleteMessage(actor: JwtAccessPayload, messageId: string) {
     const message = await this.prisma.message.findUnique({
-      where:  { id: messageId },
+      where: { id: messageId },
       select: { id: true, senderId: true, deletedAt: true, type: true },
     });
 
@@ -281,7 +316,7 @@ export class MessagesService {
 
     await this.prisma.message.update({
       where: { id: messageId },
-      data:  { deletedAt: new Date() },
+      data: { deletedAt: new Date() },
     });
 
     return { deleted: true };
@@ -289,7 +324,7 @@ export class MessagesService {
 
   async getUnreadCount(userId: string): Promise<number> {
     const participants = await this.prisma.conversationParticipant.findMany({
-      where:  { userId },
+      where: { userId },
       select: { conversationId: true, lastReadAt: true },
     });
 
@@ -300,10 +335,10 @@ export class MessagesService {
         this.prisma.message.count({
           where: {
             conversationId,
-            deletedAt:  null,
-            senderId:   { not: userId },
-            type:       { not: MessageType.SYSTEM },
-            createdAt:  { gt: lastReadAt },
+            deletedAt: null,
+            senderId: { not: userId },
+            type: { not: MessageType.SYSTEM },
+            createdAt: { gt: lastReadAt },
           },
         }),
       ),
@@ -331,28 +366,38 @@ export class MessagesService {
 
   private formatMessage(message: any) {
     return {
-      id:             message.id,
+      id: message.id,
       conversationId: message.conversationId,
-      type:           message.type,
-      text:           message.text,
-      mediaUrl:       message.mediaUrl,
-      metadata:       message.metadata,
-      sender:         message.sender
-        ? { id: message.sender.id, name: message.sender.name, avatar: message.sender.avatar }
+      type: message.type,
+      text: message.text,
+      mediaUrl: message.mediaUrl,
+      metadata: message.metadata,
+      sender: message.sender
+        ? {
+            id: message.sender.id,
+            name: message.sender.name,
+            avatar: message.sender.avatar,
+          }
         : null,
       replyTo: message.replyTo
         ? {
-            id:        message.replyTo.id,
-            type:      message.replyTo.type,
-            text:      message.replyTo.deletedAt ? null : message.replyTo.text,
-            mediaUrl:  message.replyTo.deletedAt ? null : message.replyTo.mediaUrl,
-            deleted:   !!message.replyTo.deletedAt,
-            sender:    message.replyTo.sender
-              ? { id: message.replyTo.sender.id, name: message.replyTo.sender.name, avatar: message.replyTo.sender.avatar }
+            id: message.replyTo.id,
+            type: message.replyTo.type,
+            text: message.replyTo.deletedAt ? null : message.replyTo.text,
+            mediaUrl: message.replyTo.deletedAt
+              ? null
+              : message.replyTo.mediaUrl,
+            deleted: !!message.replyTo.deletedAt,
+            sender: message.replyTo.sender
+              ? {
+                  id: message.replyTo.sender.id,
+                  name: message.replyTo.sender.name,
+                  avatar: message.replyTo.sender.avatar,
+                }
               : null,
           }
         : null,
-      isSystem:  message.type === MessageType.SYSTEM,
+      isSystem: message.type === MessageType.SYSTEM,
       createdAt: message.createdAt,
       deletedAt: message.deletedAt ?? null,
     };

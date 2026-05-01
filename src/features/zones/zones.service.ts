@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { CreateZoneDto, UpdateZoneDto, CheckLocationDto } from './dto/zone.dto';
-import { ZoneErrors, CommonSuccess } from '../../common/constants/response.constants';
+import {
+  ZoneErrors,
+  CommonSuccess,
+} from '../../common/constants/response.constants';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -91,8 +98,8 @@ export class ZonesService {
   }
 
   async updateZone(id: string, dto: UpdateZoneDto) {
-    await this.getZoneById(id); 
-    
+    await this.getZoneById(id);
+
     if (dto.boundary) {
       const geoJson = JSON.stringify({
         type: 'Polygon',
@@ -110,7 +117,7 @@ export class ZonesService {
         throw new BadRequestException(ZoneErrors.INVALID_BOUNDARY);
       }
     }
-    
+
     const { boundary, ...standardFields } = dto;
 
     if (Object.keys(standardFields).length > 0) {
@@ -125,7 +132,7 @@ export class ZonesService {
 
   async deleteZone(id: string) {
     await this.getZoneById(id);
-    
+
     await this.prisma.zone.delete({ where: { id } });
 
     return { message: CommonSuccess.RESOURCE_DELETED };

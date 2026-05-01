@@ -10,7 +10,7 @@ export class DevicesController {
   @Post()
   async register(
     @CurrentUser('sub') userId: string,
-    @Body() dto: RegisterDeviceDto
+    @Body() dto: RegisterDeviceDto,
   ) {
     await this.deviceService.register(userId, dto);
     return { message: 'common.success.operation' };
@@ -19,7 +19,7 @@ export class DevicesController {
   @Delete(':token')
   async remove(
     @CurrentUser('sub') userId: string,
-    @Param('token') token: string
+    @Param('token') token: string,
   ) {
     await this.deviceService.remove(userId, token);
     return { message: 'common.success.operation' };

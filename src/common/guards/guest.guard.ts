@@ -1,7 +1,7 @@
-import { 
-  CanActivate, 
-  ExecutionContext, 
-  Injectable, 
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
   ForbiddenException,
   Inject,
 } from '@nestjs/common';

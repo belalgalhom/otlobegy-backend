@@ -17,7 +17,10 @@ export class MailService {
       this.logger.log(`Generated email job for: ${to}`);
       return true;
     } catch (error: any) {
-      this.logger.error(`Failed to queue email for ${to}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to queue email for ${to}: ${error.message}`,
+        error.stack,
+      );
       return false;
     }
   }

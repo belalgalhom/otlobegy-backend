@@ -12,9 +12,10 @@ import { ApiResponse } from '../interfaces/api-response.interface';
 import { CommonSuccess } from '../constants/response.constants';
 
 @Injectable()
-export class TransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T>>
-{
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponse<T>
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler<T>,

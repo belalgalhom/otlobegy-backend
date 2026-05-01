@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { MailService } from '../../infrastructure/mail/mail.service';
-import {
-  OtpRequestedEvent,
-} from '../events';
+import { OtpRequestedEvent } from '../events';
 import { EVENTS } from '../events/event-names';
 
 @Injectable()

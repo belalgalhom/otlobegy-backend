@@ -13,15 +13,7 @@ import { ChatMediaService } from './media/media.service';
     MessagesController,
     ChatMediaController,
   ],
-  providers: [
-    ConversationsService,
-    MessagesService,
-    ChatMediaService,
-  ],
-  exports: [
-    ConversationsService,
-    MessagesService,
-    ChatMediaService,
-  ],
+  providers: [ConversationsService, MessagesService, ChatMediaService],
+  exports: [ConversationsService, MessagesService, ChatMediaService],
 })
 export class ChatModule {}

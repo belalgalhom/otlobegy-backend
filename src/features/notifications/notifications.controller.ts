@@ -33,10 +33,7 @@ export class NotificationsController {
   }
 
   @Get(':id')
-  getOne(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  getOne(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.notificationsService.getOne(userId, id);
   }
 
@@ -51,19 +48,13 @@ export class NotificationsController {
 
   @Patch(':id/read')
   @HttpCode(HttpStatus.OK)
-  markOneRead(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  markOneRead(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.notificationsService.markOneRead(userId, id);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  deleteOne(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  deleteOne(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.notificationsService.deleteOne(userId, id);
   }
 

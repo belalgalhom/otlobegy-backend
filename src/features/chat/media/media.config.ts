@@ -18,7 +18,7 @@ export const MEDIA_CONFIGS: Record<string, ChatMediaTypeConfig> = {
     messageType: 'VIDEO',
     mimeTypes: ['video/mp4', 'video/quicktime', 'video/webm', 'video/3gpp'],
     extensions: ['mp4', 'mov', 'webm', '3gp'],
-    maxSizeBytes: 10 * 1024 * 1024, 
+    maxSizeBytes: 10 * 1024 * 1024,
     folder: 'chat/videos',
   },
   AUDIO: {

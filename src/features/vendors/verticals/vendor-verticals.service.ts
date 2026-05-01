@@ -4,8 +4,14 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
-import { CreateVendorVerticalDto, UpdateVendorVerticalDto } from './dto/vendor-vertical.dto';
-import { VendorVerticalErrors, CommonSuccess } from 'src/common/constants/response.constants';
+import {
+  CreateVendorVerticalDto,
+  UpdateVendorVerticalDto,
+} from './dto/vendor-vertical.dto';
+import {
+  VendorVerticalErrors,
+  CommonSuccess,
+} from 'src/common/constants/response.constants';
 
 @Injectable()
 export class VendorVerticalsService {
@@ -16,11 +22,11 @@ export class VendorVerticalsService {
 
     return this.prisma.vendorVertical.create({
       data: {
-        name:      dto.name,
-        nameAr:    dto.nameAr    ?? null,
-        slug:      dto.slug,
-        iconUrl:   dto.iconUrl   ?? null,
-        isActive:  dto.isActive  ?? true,
+        name: dto.name,
+        nameAr: dto.nameAr ?? null,
+        slug: dto.slug,
+        iconUrl: dto.iconUrl ?? null,
+        isActive: dto.isActive ?? true,
         sortOrder: dto.sortOrder ?? 0,
       },
     });
@@ -34,7 +40,7 @@ export class VendorVerticalsService {
 
   async findAllActive() {
     return this.prisma.vendorVertical.findMany({
-      where:   { isActive: true },
+      where: { isActive: true },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
   }
@@ -57,11 +63,11 @@ export class VendorVerticalsService {
     return this.prisma.vendorVertical.update({
       where: { id },
       data: {
-        ...(dto.name      !== undefined && { name:      dto.name }),
-        ...(dto.nameAr    !== undefined && { nameAr:    dto.nameAr }),
-        ...(dto.slug      !== undefined && { slug:      dto.slug }),
-        ...(dto.iconUrl   !== undefined && { iconUrl:   dto.iconUrl }),
-        ...(dto.isActive  !== undefined && { isActive:  dto.isActive }),
+        ...(dto.name !== undefined && { name: dto.name }),
+        ...(dto.nameAr !== undefined && { nameAr: dto.nameAr }),
+        ...(dto.slug !== undefined && { slug: dto.slug }),
+        ...(dto.iconUrl !== undefined && { iconUrl: dto.iconUrl }),
+        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
         ...(dto.sortOrder !== undefined && { sortOrder: dto.sortOrder }),
       },
     });
@@ -76,7 +82,7 @@ export class VendorVerticalsService {
 
   private async assertSlugAvailable(slug: string, excludeId?: string) {
     const existing = await this.prisma.vendorVertical.findUnique({
-      where:  { slug },
+      where: { slug },
       select: { id: true },
     });
 

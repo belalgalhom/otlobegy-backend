@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsEnum,
-  IsUUID,
-} from 'class-validator';
+import { IsNotEmpty, IsEnum, IsUUID } from 'class-validator';
 import { VendorMemberRole } from '@prisma/client';
 
 export class AddVendorMemberDto {
