@@ -1,4 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- CreateEnum
 CREATE TYPE "DevicePlatform" AS ENUM ('ANDROID', 'IOS', 'WEB');
@@ -1302,7 +1303,7 @@ INSERT INTO "users" (
   gen_random_uuid(),
   'superadmin@otlob.com',
   '+201000000000',
-  '$2b$10$X7aBR3GKGOBXakRc3r5GH.DXaFSLh8B.RuUxCXhqkWQDh.rrXXEIy',
+  crypt('admin123', gen_salt('bf')),
   'Super Administrator',
   'SUPER_ADMIN'::"Role",
   'EN'::"Language",
@@ -1311,4 +1312,4 @@ INSERT INTO "users" (
   false,
   ARRAY[]::"Permission"[],
   NOW()
-)
+);
