@@ -35,19 +35,18 @@ import { TicketsModule } from './features/tickets/tickets.module';
 import { VendorsModule } from './features/vendors/vendors.module';
 
 import { ListenersModule } from './common/listeners/listener.module';
-import { features } from 'process';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, 
+      isGlobal: true,
       envFilePath: '.env',
       validate: envValidate,
     }),
     PrismaModule, 
     LoggerModule,
     JwtConfigModule,
-    QueueModule,  
+    QueueModule,
     RedisModule,
     SocketModule,
     StorageModule,
