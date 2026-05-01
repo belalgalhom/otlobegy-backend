@@ -26,6 +26,7 @@
     "noFallthroughCasesInSwitch": false,
     "types": ["node"]
   },
+  "include": ["src"],
   "exclude": [
     "prisma.config.ts"
   ]
