@@ -39,4 +39,8 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 Server is running on port ${port}`);
 }
-bootstrap();
+
+void bootstrap().catch((err) => {
+  console.error('API failed to start:', err);
+  process.exit(1);
+});

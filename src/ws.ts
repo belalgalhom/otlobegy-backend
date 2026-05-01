@@ -9,8 +9,7 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(WsModule);
 
-  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-  app.useLogger(logger);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.enableShutdownHooks();
 
@@ -41,4 +40,7 @@ async function bootstrap() {
   console.log(`🚀 WS server running on port ${port}`);
 }
 
-bootstrap();
+void bootstrap().catch((err) => {
+  console.error('WS failed to start:', err);
+  process.exit(1);
+});

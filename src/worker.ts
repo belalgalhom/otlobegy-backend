@@ -10,4 +10,8 @@ async function bootstrap() {
 
   console.log('🚀 Worker is running and listening for jobs...');
 }
-bootstrap();
+
+void bootstrap().catch((err) => {
+  console.error('WORKER failed to start:', err);
+  process.exit(1);
+});
