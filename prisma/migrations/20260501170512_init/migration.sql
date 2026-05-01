@@ -1284,3 +1284,31 @@ BEGIN
   );
 END;
 $$;
+
+INSERT INTO "users" (
+  "id",
+  "email",
+  "phone",
+  "password",
+  "name",
+  "role",
+  "language",
+  "isEmailVerified",
+  "isPhoneVerified",
+  "isBanned",
+  "permissions",
+  "updatedAt"
+) VALUES (
+  gen_random_uuid(),
+  'superadmin@otlob.com',
+  '+201000000000',
+  '$2b$10$X7aBR3GKGOBXakRc3r5GH.DXaFSLh8B.RuUxCXhqkWQDh.rrXXEIy',
+  'Super Administrator',
+  'SUPER_ADMIN'::"Role",
+  'EN'::"Language",
+  true,
+  true,
+  false,
+  ARRAY[]::"Permission"[],
+  NOW()
+)
