@@ -90,7 +90,6 @@ export class MenuCategoriesService {
       },
     });
 
-    this.logger.log(`Menu category created: ${category.id} for vendor ${vendorId}`);
     return category;
   }
 
