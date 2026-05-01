@@ -8,7 +8,7 @@ import { createKeyv } from '@keyv/redis';
   imports: [
     CacheModule.registerAsync({
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         stores: [createKeyv(config.get<string>('REDIS_URL'))],
         ttl: 600000,
       }),
