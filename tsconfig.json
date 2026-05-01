@@ -27,6 +27,6 @@
     "types": ["node"]
   },
   "exclude": [
-    "**/*.config.ts"
+    "prisma.config.ts"
   ]
 }
