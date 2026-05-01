@@ -116,3 +116,19 @@ export const VendorMemberErrors = {
 export const VendorBranchErrors = {
   NOT_FOUND: 'vendor_branch.error.not_found',
 };
+
+export const MenuCategoryErrors = {
+  NOT_FOUND: 'menu_category.error.not_found',
+  BELONGS_TO_OTHER_VENDOR: 'menu_category.error.belongs_to_other_vendor',
+};
+
+export const ProductErrors = {
+  NOT_FOUND: 'product.error.not_found',
+  VARIANT_NOT_FOUND: 'product.error.variant_not_found',
+  OPTION_GROUP_NOT_FOUND: 'product.error.option_group_not_found',
+  OPTION_NOT_FOUND: 'product.error.option_not_found',
+  SKU_TAKEN: 'product.error.sku_taken',
+  PRICE_REQUIRED: 'product.error.base_price_required_without_variants',
+  CATEGORY_NOT_FOUND: 'product.error.category_not_found',
+  IMAGE_UPLOAD_FAILED: 'product.error.image_upload_failed',
+};

@@ -6,7 +6,6 @@ import {
   IsInt,
   IsPositive,
   Min,
-  Max,
   MaxLength,
   IsUrl,
   IsEmail,
