@@ -6,10 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npm run build:api && npm run build:worker && npm run build:ws",
-    "build:api": "nest build api",
-    "build:worker": "nest build worker",
-    "build:ws": "nest build ws",
+    "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
