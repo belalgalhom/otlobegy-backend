@@ -27,6 +27,8 @@
     "types": ["node"]
   },
   "exclude": [
+    "node_modules",
+    "dist",
     "prisma.config.ts"
   ]
 }
