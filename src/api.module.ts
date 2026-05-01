@@ -33,6 +33,7 @@ import { CustomersModule } from './features/customers/customers.module';
 import { ZonesModule } from './features/zones/zones.module';
 import { TicketsModule } from './features/tickets/tickets.module';
 import { VendorsModule } from './features/vendors/vendors.module';
+import { PlatformSettingsModule } from './features/platform-settings/platform-settings.module';
 
 import { ListenersModule } from './common/listeners/listener.module';
 
@@ -66,6 +67,7 @@ import { ListenersModule } from './common/listeners/listener.module';
     ZonesModule,
     TicketsModule,
     VendorsModule,
+    PlatformSettingsModule,
 
     ListenersModule,
   ],
@@ -75,7 +77,6 @@ import { ListenersModule } from './common/listeners/listener.module';
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-
     {
       provide: APP_GUARD,
       useClass: VerifiedGuard,
@@ -84,7 +85,6 @@ import { ListenersModule } from './common/listeners/listener.module';
       provide: APP_INTERCEPTOR,
       useClass: TransformInterceptor,
     },
-
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
