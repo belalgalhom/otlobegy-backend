@@ -126,9 +126,6 @@ export class PlatformSettingsService {
       update: data,
     });
 
-    this.logger.log(
-      `Platform settings updated: ${Object.keys(data).join(', ')}`,
-    );
     return settings;
   }
 
