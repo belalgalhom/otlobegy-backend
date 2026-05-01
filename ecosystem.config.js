@@ -8,7 +8,6 @@ module.exports = {
       watch: false,
       autorestart: true,
       max_memory_restart: '300M',
-      env_file: '.env',
     },
     {
       name: 'ws',
@@ -18,7 +17,6 @@ module.exports = {
       watch: false,
       autorestart: true,
       max_memory_restart: '200M',
-      env_file: '.env',
     },
     {
       name: 'worker',
@@ -28,7 +26,6 @@ module.exports = {
       watch: false,
       autorestart: true,
       max_memory_restart: '200M',
-      env_file: '.env',
     },
   ],
 };
