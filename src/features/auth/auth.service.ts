@@ -165,7 +165,7 @@ export class AuthService {
     });
 
     if (!user) {
-      return { message: CommonSuccess.FORGOT_PASSWORD_SENT };
+      return { message: CommonSuccess.OPERATION_SUCCESS };
     }
 
     const isEmail = dto.contact.includes('@');
