@@ -182,7 +182,7 @@ export class AuthService {
       new OtpRequestedEvent(dto.contact, code, method, 'PASSWORD_RESET'),
     );
 
-    return { message: CommonSuccess.FORGOT_PASSWORD_SENT };
+    return { message: CommonSuccess.OPERATION_SUCCESS };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
