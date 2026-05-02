@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import { StorageService } from '../../../infrastructure/storage/storage.service';
+import { Prisma } from '@prisma/client';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -177,7 +178,11 @@ export class ProductsService {
   // ─── Update ───────────────────────────────────────────────────────────────
 
   async update(vendorId: string, productId: string, dto: UpdateProductDto) {
-    await this.findOne(vendorId, productId); // 404 if not found
+    const exists = await this.prisma.product.findFirst({
+      where: { id: productId, vendorId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundException(ProductErrors.NOT_FOUND);
 
     if (dto.categoryId !== undefined && dto.categoryId !== null) {
       await this.assertCategoryBelongsToVendor(dto.categoryId, vendorId);
@@ -187,27 +192,42 @@ export class ProductsService {
       await this.assertSkuAvailable(dto.sku, productId);
     }
 
-    await this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        ...(dto.categoryId !== undefined && { categoryId: dto.categoryId }),
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.nameAr !== undefined && { nameAr: dto.nameAr }),
-        ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.descriptionAr !== undefined && {
-          descriptionAr: dto.descriptionAr,
-        }),
-        ...(dto.basePrice !== undefined && { basePrice: dto.basePrice }),
-        ...(dto.comparePrice !== undefined && {
-          comparePrice: dto.comparePrice,
-        }),
-        ...(dto.sku !== undefined && { sku: dto.sku }),
-        ...(dto.stock !== undefined && { stock: dto.stock }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-        ...(dto.isFeatured !== undefined && { isFeatured: dto.isFeatured }),
-        version: { increment: 1 },
-      },
-    });
+    try {
+      await this.prisma.product.update({
+        where: { 
+          id: productId,
+          ...(dto.version !== undefined && { version: dto.version }),
+        },
+        data: {
+          ...(dto.categoryId !== undefined && { categoryId: dto.categoryId }),
+          ...(dto.name !== undefined && { name: dto.name }),
+          ...(dto.nameAr !== undefined && { nameAr: dto.nameAr }),
+          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.descriptionAr !== undefined && {
+            descriptionAr: dto.descriptionAr,
+          }),
+          ...(dto.basePrice !== undefined && { basePrice: dto.basePrice }),
+          ...(dto.comparePrice !== undefined && {
+            comparePrice: dto.comparePrice,
+          }),
+          ...(dto.sku !== undefined && { sku: dto.sku }),
+          ...(dto.stock !== undefined && { stock: dto.stock }),
+          ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+          ...(dto.isFeatured !== undefined && { isFeatured: dto.isFeatured }),
+          version: { increment: 1 },
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new ConflictException(
+          'Product has been updated by another request. Please reload and try again.',
+        );
+      }
+      throw error;
+    }
 
     return this.findOne(vendorId, productId);
   }
@@ -215,7 +235,11 @@ export class ProductsService {
   // ─── Upload product image ─────────────────────────────────────────────────
 
   async uploadImage(vendorId: string, productId: string, file: Express.Multer.File) {
-    const product = await this.findOne(vendorId, productId);
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, vendorId, deletedAt: null },
+      select: { imageUrl: true },
+    });
+    if (!product) throw new NotFoundException(ProductErrors.NOT_FOUND);
 
     if (product.imageUrl) {
       await this.storage.delete(product.imageUrl);
@@ -235,7 +259,11 @@ export class ProductsService {
   // ─── Soft delete ──────────────────────────────────────────────────────────
 
   async remove(vendorId: string, productId: string) {
-    await this.findOne(vendorId, productId);
+    const exists = await this.prisma.product.findFirst({
+      where: { id: productId, vendorId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundException(ProductErrors.NOT_FOUND);
 
     await this.prisma.product.update({
       where: { id: productId },
@@ -304,21 +332,36 @@ export class ProductsService {
       await this.assertVariantSkuAvailable(dto.sku, variantId);
     }
 
-    await this.prisma.productVariant.update({
-      where: { id: variantId },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.nameAr !== undefined && { nameAr: dto.nameAr }),
-        ...(dto.sku !== undefined && { sku: dto.sku }),
-        ...(dto.basePrice !== undefined && { basePrice: dto.basePrice }),
-        ...(dto.comparePrice !== undefined && {
-          comparePrice: dto.comparePrice,
-        }),
-        ...(dto.stock !== undefined && { stock: dto.stock }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-        version: { increment: 1 },
-      },
-    });
+    try {
+      await this.prisma.productVariant.update({
+        where: { 
+          id: variantId,
+          ...(dto.version !== undefined && { version: dto.version }),
+        },
+        data: {
+          ...(dto.name !== undefined && { name: dto.name }),
+          ...(dto.nameAr !== undefined && { nameAr: dto.nameAr }),
+          ...(dto.sku !== undefined && { sku: dto.sku }),
+          ...(dto.basePrice !== undefined && { basePrice: dto.basePrice }),
+          ...(dto.comparePrice !== undefined && {
+            comparePrice: dto.comparePrice,
+          }),
+          ...(dto.stock !== undefined && { stock: dto.stock }),
+          ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+          version: { increment: 1 },
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new ConflictException(
+          'Variant has been updated by another request. Please reload and try again.',
+        );
+      }
+      throw error;
+    }
 
     return this.findOne(vendorId, productId);
   }

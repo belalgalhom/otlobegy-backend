@@ -13,17 +13,11 @@ export class CustomersService {
   constructor(private prisma: PrismaService) {}
 
   async getCustomerByUserId(userId: string) {
-    let customer = await this.prisma.customer.findUnique({
+    return this.prisma.customer.upsert({
       where: { userId },
+      update: {},
+      create: { userId },
     });
-
-    if (!customer) {
-      customer = await this.prisma.customer.create({
-        data: { userId },
-      });
-    }
-
-    return customer;
   }
 
   async assertCanOrder(userId: string) {
@@ -58,29 +52,31 @@ export class CustomersService {
   async createAddress(userId: string, dto: CreateAddressDto) {
     const customer = await this.getCustomerByUserId(userId);
 
-    if (dto.isDefault) {
-      await this.prisma.address.updateMany({
-        where: { customerId: customer.id },
-        data: { isDefault: false },
-      });
-    }
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.isDefault) {
+        await tx.address.updateMany({
+          where: { customerId: customer.id },
+          data: { isDefault: false },
+        });
+      }
 
-    const [address] = await this.prisma.$queryRaw<any[]>`
-      INSERT INTO addresses (id, "customerId", label, address, details, "isDefault", location, "updatedAt")
-      VALUES (
-        gen_random_uuid(), 
-        ${customer.id}::uuid, 
-        ${dto.label ?? 'Home'}, 
-        ${dto.address}, 
-        ${dto.details ?? null}, 
-        ${dto.isDefault ?? false}, 
-        ST_SetSRID(ST_MakePoint(${dto.location[0]}, ${dto.location[1]}), 4326),
-        NOW()
-      )
-      RETURNING id, label, address, details, "isDefault", ST_AsGeoJSON(location)::json as location;
-    `;
+      const [address] = await tx.$queryRaw<any[]>`
+        INSERT INTO addresses (id, "customerId", label, address, details, "isDefault", location, "updatedAt")
+        VALUES (
+          gen_random_uuid(), 
+          ${customer.id}::uuid, 
+          ${dto.label ?? 'Home'}, 
+          ${dto.address}, 
+          ${dto.details ?? null}, 
+          ${dto.isDefault ?? false}, 
+          ST_SetSRID(ST_MakePoint(${dto.location[0]}, ${dto.location[1]}), 4326),
+          NOW()
+        )
+        RETURNING id, label, address, details, "isDefault", ST_AsGeoJSON(location)::json as location;
+      `;
 
-    return address;
+      return address;
+    });
   }
 
   async updateAddress(
@@ -96,31 +92,33 @@ export class CustomersService {
 
     if (!address) throw new NotFoundException(CustomerErrors.ADDRESS_NOT_FOUND);
 
-    if (dto.isDefault) {
-      await this.prisma.address.updateMany({
-        where: { customerId: customer.id, id: { not: addressId } },
-        data: { isDefault: false },
-      });
-    }
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.isDefault) {
+        await tx.address.updateMany({
+          where: { customerId: customer.id, id: { not: addressId } },
+          data: { isDefault: false },
+        });
+      }
 
-    const locationUpdate = dto.location
-      ? Prisma.sql`ST_SetSRID(ST_MakePoint(${dto.location[0]}, ${dto.location[1]}), 4326)`
-      : Prisma.sql`location`;
+      const locationUpdate = dto.location
+        ? Prisma.sql`ST_SetSRID(ST_MakePoint(${dto.location[0]}, ${dto.location[1]}), 4326)`
+        : Prisma.sql`location`;
 
-    const [updated] = await this.prisma.$queryRaw<any[]>`
-      UPDATE addresses 
-      SET 
-        label = COALESCE(${dto.label ?? null}, label),
-        address = COALESCE(${dto.address ?? null}, address),
-        details = COALESCE(${dto.details ?? null}, details),
-        "isDefault" = COALESCE(${dto.isDefault ?? null}, "isDefault"),
-        location = ${locationUpdate},
-        "updatedAt" = NOW()
-      WHERE id = ${addressId}::uuid AND "customerId" = ${customer.id}::uuid
-      RETURNING id, label, address, details, "isDefault", ST_AsGeoJSON(location)::json as location;
-    `;
+      const [updated] = await tx.$queryRaw<any[]>`
+        UPDATE addresses 
+        SET 
+          label = COALESCE(${dto.label ?? null}, label),
+          address = COALESCE(${dto.address ?? null}, address),
+          details = COALESCE(${dto.details ?? null}, details),
+          "isDefault" = COALESCE(${dto.isDefault ?? null}, "isDefault"),
+          location = ${locationUpdate},
+          "updatedAt" = NOW()
+        WHERE id = ${addressId}::uuid AND "customerId" = ${customer.id}::uuid
+        RETURNING id, label, address, details, "isDefault", ST_AsGeoJSON(location)::json as location;
+      `;
 
-    return updated;
+      return updated;
+    });
   }
 
   async deleteAddress(userId: string, addressId: string) {

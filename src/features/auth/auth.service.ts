@@ -7,9 +7,11 @@ import {
   ForbiddenException,
   Inject,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service';
 import { OtpService } from '../otp/otp.service';
@@ -230,7 +232,8 @@ export class AuthService {
       throw new UnauthorizedException(AuthErrors.SESSION_EXPIRED);
     }
 
-    const isMatch = await bcrypt.compare(rawRefreshToken, session.hashedRt);
+    const rtHashInput = crypto.createHash('sha256').update(rawRefreshToken).digest('hex');
+    const isMatch = await bcrypt.compare(rtHashInput, session.hashedRt);
     if (!isMatch) {
       await this.prisma.session.deleteMany({ where: { userId: payload.sub } });
       throw new UnauthorizedException(AuthErrors.SESSION_EXPIRED);
@@ -282,26 +285,18 @@ export class AuthService {
 
     const expiresAt = this.parseExpiry(refreshExpiresIn);
 
-    const session = await this.prisma.session.create({
-      data: {
-        userId,
-        hashedRt: 'pending',
-        expiresAt,
-        ipAddress: meta?.ipAddress,
-        userAgent: meta?.userAgent,
-      },
-    });
+    const sessionId = randomUUID();
 
     const accessPayload: JwtAccessPayload = {
       sub: userId,
-      sid: session.id,
+      sid: sessionId,
       role: role as any,
       verified,
     };
 
     const refreshPayload: JwtRefreshPayload = {
       sub: userId,
-      sid: session.id,
+      sid: sessionId,
     };
 
     const [access_token, refresh_token] = await Promise.all([
@@ -309,10 +304,18 @@ export class AuthService {
       this.refreshJwt.signAsync(refreshPayload),
     ]);
 
-    const hashedRt = await bcrypt.hash(refresh_token, 10);
-    await this.prisma.session.update({
-      where: { id: session.id },
-      data: { hashedRt },
+    const rtHashInput = crypto.createHash('sha256').update(refresh_token).digest('hex');
+    const hashedRt = await bcrypt.hash(rtHashInput, 10);
+    
+    await this.prisma.session.create({
+      data: {
+        id: sessionId,
+        userId,
+        hashedRt,
+        expiresAt,
+        ipAddress: meta?.ipAddress,
+        userAgent: meta?.userAgent,
+      },
     });
 
     return { access_token, refresh_token };

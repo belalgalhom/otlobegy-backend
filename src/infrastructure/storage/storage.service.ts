@@ -39,7 +39,12 @@ export class StorageService {
       if (!fileUrl) return;
 
       const relativePath = fileUrl.replace(/^\/media\//, '');
-      const filePath = path.join(this.baseDir, relativePath);
+      const filePath = path.normalize(path.join(this.baseDir, relativePath));
+
+      if (!filePath.startsWith(this.baseDir)) {
+        this.logger.warn(`Path traversal attempt detected for: ${fileUrl}`);
+        return;
+      }
 
       if (fs.existsSync(filePath)) {
         await fs.promises.unlink(filePath);

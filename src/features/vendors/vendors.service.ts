@@ -12,6 +12,8 @@ import {
   UpdateVendorStatusDto,
   QueryVendorsDto,
 } from './dto/vendor.dto';
+import { Prisma } from '@prisma/client';
+import { randomBytes } from 'crypto';
 
 import {
   CommonSuccess,
@@ -30,21 +32,45 @@ export class VendorsService {
   // ─── Admin: create ────────────────────────────────────────────────────────
 
   async create(dto: CreateVendorDto) {
-    const slug = await this.generateUniqueSlug(dto.storeName);
+    const base = dto.storeName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 80) || 'vendor';
 
-    return this.prisma.vendor.create({
-      data: {
-        storeName: dto.storeName,
-        storeNameAr: dto.storeNameAr ?? null,
-        slug,
-        description: dto.description ?? null,
-        descriptionAr: dto.descriptionAr ?? null,
-        verticalId: dto.verticalId,
-        taxId: dto.taxId ?? null,
-        commissionRate: dto.commissionRate ?? 10.0,
-      },
-      include: this.vendorIncludes(),
-    });
+    let slug = base;
+    let attempts = 0;
+
+    while (attempts < 5) {
+      try {
+        return await this.prisma.vendor.create({
+          data: {
+            storeName: dto.storeName,
+            storeNameAr: dto.storeNameAr ?? null,
+            slug,
+            description: dto.description ?? null,
+            descriptionAr: dto.descriptionAr ?? null,
+            verticalId: dto.verticalId,
+            taxId: dto.taxId ?? null,
+            commissionRate: dto.commissionRate ?? 10.0,
+          },
+          include: this.vendorIncludes(),
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          slug = `${base}-${randomBytes(3).toString('hex')}`;
+          attempts++;
+          continue;
+        }
+        throw error;
+      }
+    }
+    throw new ConflictException('Unable to generate unique slug for vendor');
   }
 
   // ─── Public / member: list ─────────────────────────────────────────────────
@@ -105,7 +131,11 @@ export class VendorsService {
   // ─── Admin: update ────────────────────────────────────────────────────────
 
   async update(id: string, dto: UpdateVendorDto) {
-    await this.findOne(id);
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id },
+      select: { deletedAt: true },
+    });
+    if (!vendor || vendor.deletedAt) throw new NotFoundException(VendorErrors.NOT_FOUND);
 
     // If storeName changes and no explicit slug change is needed,
     // we do NOT auto-regenerate the slug to avoid breaking existing URLs.
@@ -132,7 +162,11 @@ export class VendorsService {
   }
 
   async updateStatus(id: string, dto: UpdateVendorStatusDto) {
-    await this.findOne(id);
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id },
+      select: { deletedAt: true },
+    });
+    if (!vendor || vendor.deletedAt) throw new NotFoundException(VendorErrors.NOT_FOUND);
 
     return this.prisma.vendor.update({
       where: { id },
@@ -144,7 +178,11 @@ export class VendorsService {
   // ─── Admin: logo & cover image ────────────────────────────────────────────
 
   async uploadLogo(id: string, file: Express.Multer.File) {
-    const vendor = await this.findOne(id);
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id },
+      select: { deletedAt: true, logo: true },
+    });
+    if (!vendor || vendor.deletedAt) throw new NotFoundException(VendorErrors.NOT_FOUND);
 
     if (vendor.logo) {
       await this.storage.delete(vendor.logo);
@@ -162,7 +200,11 @@ export class VendorsService {
   }
 
   async uploadCover(id: string, file: Express.Multer.File) {
-    const vendor = await this.findOne(id);
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id },
+      select: { deletedAt: true, coverImage: true },
+    });
+    if (!vendor || vendor.deletedAt) throw new NotFoundException(VendorErrors.NOT_FOUND);
 
     if (vendor.coverImage) {
       await this.storage.delete(vendor.coverImage);
@@ -182,7 +224,11 @@ export class VendorsService {
   // ─── Admin: soft delete ───────────────────────────────────────────────────
 
   async remove(id: string) {
-    await this.findOne(id);
+    const vendor = await this.prisma.vendor.findUnique({
+      where: { id },
+      select: { deletedAt: true },
+    });
+    if (!vendor || vendor.deletedAt) throw new NotFoundException(VendorErrors.NOT_FOUND);
 
     await this.prisma.vendor.update({
       where: { id },
@@ -193,37 +239,6 @@ export class VendorsService {
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
-
-  /**
-   * Derives a URL-safe slug from the store name and appends a numeric suffix
-   * if the base slug is already taken, e.g. "my-shop" → "my-shop-2".
-   */
-  private async generateUniqueSlug(storeName: string): Promise<string> {
-    const base = storeName
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .slice(0, 80);
-
-    let slug = base;
-    let count = 2;
-
-    while (true) {
-      const existing = await this.prisma.vendor.findUnique({
-        where: { slug },
-        select: { id: true },
-      });
-
-      if (!existing) break;
-
-      slug = `${base}-${count}`;
-      count++;
-    }
-
-    return slug;
-  }
 
   private vendorIncludes() {
     return {

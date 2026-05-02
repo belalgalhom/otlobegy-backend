@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { ApiResponseBuilder } from '../utils/api-response.builder';
 import { CommonErrors } from '../constants/response.constants';
 
@@ -42,6 +43,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       return exception.getStatus();
     }
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (exception.code) {
+        case 'P2002':
+          return HttpStatus.CONFLICT;
+        case 'P2025':
+          return HttpStatus.NOT_FOUND;
+        default:
+          return HttpStatus.BAD_REQUEST;
+      }
+    }
     return HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
@@ -51,6 +62,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
   } {
     let messageKey = CommonErrors.UNKNOWN_ERROR;
     let errors: Record<string, string[]> | null = null;
+
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      switch (exception.code) {
+        case 'P2002':
+          messageKey = 'common.error.resource_already_exists';
+          break;
+        case 'P2025':
+          messageKey = 'common.error.resource_not_found';
+          break;
+        default:
+          messageKey = 'common.error.database_error';
+      }
+      return { messageKey, errors };
+    }
 
     if (!(exception instanceof HttpException)) {
       return { messageKey, errors };

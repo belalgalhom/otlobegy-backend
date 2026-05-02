@@ -323,28 +323,18 @@ export class MessagesService {
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    const participants = await this.prisma.conversationParticipant.findMany({
-      where: { userId },
-      select: { conversationId: true, lastReadAt: true },
-    });
+    const result = await this.prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count
+      FROM messages m
+      JOIN conversation_participants cp ON m."conversationId" = cp."conversationId"
+      WHERE cp."userId" = ${userId}::uuid
+        AND m."senderId" != ${userId}::uuid
+        AND m."deletedAt" IS NULL
+        AND m."type" != 'SYSTEM'
+        AND m."createdAt" > cp."lastReadAt"
+    `;
 
-    if (!participants.length) return 0;
-
-    const counts = await Promise.all(
-      participants.map(({ conversationId, lastReadAt }) =>
-        this.prisma.message.count({
-          where: {
-            conversationId,
-            deletedAt: null,
-            senderId: { not: userId },
-            type: { not: MessageType.SYSTEM },
-            createdAt: { gt: lastReadAt },
-          },
-        }),
-      ),
-    );
-
-    return counts.reduce((sum, c) => sum + c, 0);
+    return Number(result[0]?.count || 0);
   }
 
   private validateMessageContent(dto: SendMessageDto) {

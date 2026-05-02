@@ -204,6 +204,11 @@ export class UpdateProductVariantDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  version?: number;
 }
 
 // ─── Product ──────────────────────────────────────────────────────────────────
@@ -335,6 +340,11 @@ export class UpdateProductDto {
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  version?: number;
 }
 
 // ─── Query ────────────────────────────────────────────────────────────────────
