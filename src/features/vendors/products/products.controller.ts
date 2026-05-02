@@ -29,7 +29,9 @@ import { VendorMember } from '../../../common/decorators/vendor-member.decorator
 import { RequirePermissions } from '../../../common/decorators/permissions.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import { Permission, VendorMemberRole } from '@prisma/client';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 
+@ApiTags('Vendors - Products')
 @Controller('vendors/:vendorId/products')
 export class ProductsController {
   constructor(private readonly service: ProductsService) {}
@@ -38,6 +40,8 @@ export class ProductsController {
 
   @Public()
   @Get()
+  @ApiOperation({ summary: 'List all products for a vendor' })
+  @ApiResponse({ status: 200, description: 'List of products returned' })
   findAll(
     @Param('vendorId') vendorId: string,
     @Query() dto: QueryProductsDto,
@@ -47,6 +51,9 @@ export class ProductsController {
 
   @Public()
   @Get(':productId')
+  @ApiOperation({ summary: 'Get a specific product by ID' })
+  @ApiResponse({ status: 200, description: 'Product returned' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   findOne(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -57,7 +64,10 @@ export class ProductsController {
   // ─── Vendor member: any member can read; OWNER/MANAGER can write ──────────
 
   @Post()
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Create a new product (Member)' })
+  @ApiResponse({ status: 201, description: 'Product created successfully' })
   create(
     @Param('vendorId') vendorId: string,
     @Body() dto: CreateProductDto,
@@ -66,7 +76,10 @@ export class ProductsController {
   }
 
   @Patch(':productId')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Update a product (Member)' })
+  @ApiResponse({ status: 200, description: 'Product updated successfully' })
   update(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -76,8 +89,23 @@ export class ProductsController {
   }
 
   @Post(':productId/image')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
   @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiOperation({ summary: 'Upload product image' })
+  @ApiResponse({ status: 201, description: 'Image uploaded successfully' })
   uploadImage(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -88,7 +116,10 @@ export class ProductsController {
 
   @Delete(':productId')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Delete a product (Member)' })
+  @ApiResponse({ status: 200, description: 'Product removed successfully' })
   remove(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -99,7 +130,10 @@ export class ProductsController {
   // ─── Variants ─────────────────────────────────────────────────────────────
 
   @Post(':productId/variants')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Add a variant to a product' })
+  @ApiResponse({ status: 201, description: 'Variant added successfully' })
   addVariant(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -109,7 +143,10 @@ export class ProductsController {
   }
 
   @Patch(':productId/variants/:variantId')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Update a product variant' })
+  @ApiResponse({ status: 200, description: 'Variant updated successfully' })
   updateVariant(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -121,7 +158,10 @@ export class ProductsController {
 
   @Delete(':productId/variants/:variantId')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Delete a product variant' })
+  @ApiResponse({ status: 200, description: 'Variant removed successfully' })
   removeVariant(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -133,7 +173,10 @@ export class ProductsController {
   // ─── Option groups (on product) ───────────────────────────────────────────
 
   @Post(':productId/option-groups')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Add an option group to a product' })
+  @ApiResponse({ status: 201, description: 'Option group added successfully' })
   addOptionGroup(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -143,7 +186,10 @@ export class ProductsController {
   }
 
   @Patch(':productId/option-groups/:groupId')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Update a product option group' })
+  @ApiResponse({ status: 200, description: 'Option group updated successfully' })
   updateOptionGroup(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -155,7 +201,10 @@ export class ProductsController {
 
   @Delete(':productId/option-groups/:groupId')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Delete a product option group' })
+  @ApiResponse({ status: 200, description: 'Option group removed successfully' })
   removeOptionGroup(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -167,7 +216,10 @@ export class ProductsController {
   // ─── Option groups (on variant) ───────────────────────────────────────────
 
   @Post(':productId/variants/:variantId/option-groups')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Add an option group to a product variant' })
+  @ApiResponse({ status: 201, description: 'Option group added successfully' })
   addVariantOptionGroup(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -180,7 +232,10 @@ export class ProductsController {
   // ─── Options within a group ───────────────────────────────────────────────
 
   @Post(':productId/option-groups/:groupId/options')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Add an option to a group' })
+  @ApiResponse({ status: 201, description: 'Option added successfully' })
   addOption(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -191,7 +246,10 @@ export class ProductsController {
   }
 
   @Patch(':productId/option-groups/:groupId/options/:optionId')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Update an option in a group' })
+  @ApiResponse({ status: 200, description: 'Option updated successfully' })
   updateOption(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -204,7 +262,10 @@ export class ProductsController {
 
   @Delete(':productId/option-groups/:groupId/options/:optionId')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Delete an option from a group' })
+  @ApiResponse({ status: 200, description: 'Option removed successfully' })
   removeOption(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -217,7 +278,10 @@ export class ProductsController {
   // ─── Admin overrides ──────────────────────────────────────────────────────
 
   @Post('admin')
+  @ApiBearerAuth()
   @RequirePermissions(Permission.MANAGE_PRODUCTS)
+  @ApiOperation({ summary: 'Create a new product (Admin Override)' })
+  @ApiResponse({ status: 201, description: 'Product created successfully' })
   adminCreate(
     @Param('vendorId') vendorId: string,
     @Body() dto: CreateProductDto,
@@ -226,7 +290,10 @@ export class ProductsController {
   }
 
   @Patch('admin/:productId')
+  @ApiBearerAuth()
   @RequirePermissions(Permission.MANAGE_PRODUCTS)
+  @ApiOperation({ summary: 'Update a product (Admin Override)' })
+  @ApiResponse({ status: 200, description: 'Product updated successfully' })
   adminUpdate(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,
@@ -237,7 +304,10 @@ export class ProductsController {
 
   @Delete('admin/:productId')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @RequirePermissions(Permission.MANAGE_PRODUCTS)
+  @ApiOperation({ summary: 'Delete a product (Admin Override)' })
+  @ApiResponse({ status: 200, description: 'Product removed successfully' })
   adminRemove(
     @Param('vendorId') vendorId: string,
     @Param('productId') productId: string,

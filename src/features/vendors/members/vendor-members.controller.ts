@@ -19,7 +19,10 @@ import { RequirePermissions } from '../../../common/decorators/permissions.decor
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { Permission, VendorMemberRole } from '@prisma/client';
 import type { JwtAccessPayload } from '../../../common/interfaces/jwt-payload.interface';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('Vendors - Members (Team)')
+@ApiBearerAuth()
 @Controller('vendors/:vendorId/members')
 export class VendorMembersController {
   constructor(private readonly service: VendorMembersService) {}
@@ -27,6 +30,8 @@ export class VendorMembersController {
   // Any member of the vendor can list members.
   @Get()
   @VendorMember()
+  @ApiOperation({ summary: 'List all members of a vendor' })
+  @ApiResponse({ status: 200, description: 'List of members returned' })
   findAll(@Param('vendorId') vendorId: string) {
     return this.service.findAll(vendorId);
   }
@@ -34,6 +39,8 @@ export class VendorMembersController {
   // Only OWNER or admin with MANAGE_VENDORS can add a member.
   @Post()
   @VendorMember({ roles: [VendorMemberRole.OWNER] })
+  @ApiOperation({ summary: 'Add a new member to the vendor' })
+  @ApiResponse({ status: 201, description: 'Member added successfully' })
   addMember(
     @Param('vendorId') vendorId: string,
     @Body() dto: AddVendorMemberDto,
@@ -45,6 +52,8 @@ export class VendorMembersController {
   @Patch(':memberId/role')
   @HttpCode(HttpStatus.OK)
   @VendorMember({ roles: [VendorMemberRole.OWNER] })
+  @ApiOperation({ summary: "Update a member's role" })
+  @ApiResponse({ status: 200, description: 'Role updated successfully' })
   updateRole(
     @Param('vendorId') vendorId: string,
     @Param('memberId') memberId: string,
@@ -57,6 +66,8 @@ export class VendorMembersController {
   @Delete(':memberId')
   @HttpCode(HttpStatus.OK)
   @VendorMember({ roles: [VendorMemberRole.OWNER] })
+  @ApiOperation({ summary: 'Remove a member from the vendor' })
+  @ApiResponse({ status: 200, description: 'Member removed successfully' })
   removeMember(
     @Param('vendorId') vendorId: string,
     @Param('memberId') memberId: string,
@@ -73,6 +84,8 @@ export class VendorMembersController {
 
   @Post('admin')
   @RequirePermissions(Permission.MANAGE_VENDORS)
+  @ApiOperation({ summary: 'Add a new member to a vendor (Admin Override)' })
+  @ApiResponse({ status: 201, description: 'Member added successfully' })
   adminAddMember(
     @Param('vendorId') vendorId: string,
     @Body() dto: AddVendorMemberDto,
@@ -83,6 +96,8 @@ export class VendorMembersController {
   @Delete('admin/:memberId')
   @HttpCode(HttpStatus.OK)
   @RequirePermissions(Permission.MANAGE_VENDORS)
+  @ApiOperation({ summary: 'Remove a member from a vendor (Admin Override)' })
+  @ApiResponse({ status: 200, description: 'Member removed successfully' })
   adminRemoveMember(
     @Param('vendorId') vendorId: string,
     @Param('memberId') memberId: string,

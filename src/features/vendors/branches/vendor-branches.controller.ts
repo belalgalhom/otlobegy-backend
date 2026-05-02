@@ -18,7 +18,9 @@ import { VendorMember } from '../../../common/decorators/vendor-member.decorator
 import { RequirePermissions } from '../../../common/decorators/permissions.decorator';
 import { Public } from '../../../common/decorators/public.decorator';
 import { Permission, VendorMemberRole } from '@prisma/client';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('Vendors - Branches')
 @Controller('vendors/:vendorId/branches')
 export class VendorBranchesController {
   constructor(private readonly service: VendorBranchesService) {}
@@ -26,12 +28,17 @@ export class VendorBranchesController {
   // Public — customers need to see branch locations.
   @Public()
   @Get()
+  @ApiOperation({ summary: 'List all branches for a vendor' })
+  @ApiResponse({ status: 200, description: 'List of branches returned' })
   findAll(@Param('vendorId') vendorId: string) {
     return this.service.findAll(vendorId);
   }
 
   @Public()
   @Get(':branchId')
+  @ApiOperation({ summary: 'Get a specific branch by ID' })
+  @ApiResponse({ status: 200, description: 'Branch returned' })
+  @ApiResponse({ status: 404, description: 'Branch not found' })
   findOne(
     @Param('vendorId') vendorId: string,
     @Param('branchId') branchId: string,
@@ -41,7 +48,10 @@ export class VendorBranchesController {
 
   // OWNER or MANAGER can create/update/delete branches.
   @Post()
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Create a new branch (Member)' })
+  @ApiResponse({ status: 201, description: 'Branch created successfully' })
   create(
     @Param('vendorId') vendorId: string,
     @Body() dto: CreateVendorBranchDto,
@@ -50,7 +60,10 @@ export class VendorBranchesController {
   }
 
   @Patch(':branchId')
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Update a branch (Member)' })
+  @ApiResponse({ status: 200, description: 'Branch updated successfully' })
   update(
     @Param('vendorId') vendorId: string,
     @Param('branchId') branchId: string,
@@ -61,7 +74,10 @@ export class VendorBranchesController {
 
   @Delete(':branchId')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @VendorMember({ roles: [VendorMemberRole.OWNER, VendorMemberRole.MANAGER] })
+  @ApiOperation({ summary: 'Delete a branch (Member)' })
+  @ApiResponse({ status: 200, description: 'Branch deleted successfully' })
   remove(
     @Param('vendorId') vendorId: string,
     @Param('branchId') branchId: string,
@@ -71,7 +87,10 @@ export class VendorBranchesController {
 
   // Admin override — full access without membership.
   @Post('admin')
+  @ApiBearerAuth()
   @RequirePermissions(Permission.MANAGE_VENDORS)
+  @ApiOperation({ summary: 'Create a new branch (Admin Override)' })
+  @ApiResponse({ status: 201, description: 'Branch created successfully' })
   adminCreate(
     @Param('vendorId') vendorId: string,
     @Body() dto: CreateVendorBranchDto,
@@ -80,7 +99,10 @@ export class VendorBranchesController {
   }
 
   @Patch('admin/:branchId')
+  @ApiBearerAuth()
   @RequirePermissions(Permission.MANAGE_VENDORS)
+  @ApiOperation({ summary: 'Update a branch (Admin Override)' })
+  @ApiResponse({ status: 200, description: 'Branch updated successfully' })
   adminUpdate(
     @Param('vendorId') vendorId: string,
     @Param('branchId') branchId: string,
@@ -91,7 +113,10 @@ export class VendorBranchesController {
 
   @Delete('admin/:branchId')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @RequirePermissions(Permission.MANAGE_VENDORS)
+  @ApiOperation({ summary: 'Delete a branch (Admin Override)' })
+  @ApiResponse({ status: 200, description: 'Branch deleted successfully' })
   adminRemove(
     @Param('vendorId') vendorId: string,
     @Param('branchId') branchId: string,

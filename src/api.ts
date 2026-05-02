@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule);
@@ -35,9 +36,20 @@ async function bootstrap() {
 
   app.set('trust proxy', 1);
 
+  // Swagger Setup
+  const config = new DocumentBuilder()
+    .setTitle('OtlobEgy API')
+    .setDescription('The OtlobEgy API documentation')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
   const port = configService.get<number>('API_PORT') ?? 3000;
   await app.listen(port);
   console.log(`🚀 Server is running on port ${port}`);
+  console.log('📝 Swagger documentation On');
 }
 
 void bootstrap().catch((err) => {
