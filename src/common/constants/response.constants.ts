@@ -12,19 +12,17 @@ export const CommonSuccess = {
   RESOURCE_CREATED: 'common.success.resource_created',
   RESOURCE_UPDATED: 'common.success.resource_updated',
   RESOURCE_DELETED: 'common.success.resource_deleted',
-  FORGOT_PASSWORD_SENT:
-    'If an account exists with this email, you will receive an OTP code.',
 };
 
 export const AuthErrors = {
-  USER_EXISTS: 'User already exists',
-  INVALID_CREDENTIALS: 'Invalid email or password',
-  UNVERIFIED: 'Please verify your account first',
-  BANNED: 'Your account has been banned',
-  USER_NOT_FOUND: 'User not found',
-  OTP_INVALID: 'Invalid verification code',
-  OTP_EXPIRED: 'Verification code has expired',
-  SESSION_EXPIRED: 'Your session has expired, please log in again',
+  USER_EXISTS: 'auth.error.user_exists',
+  INVALID_CREDENTIALS: 'auth.error.invalid_credentials',
+  UNVERIFIED: 'auth.error.unverified',
+  BANNED: 'auth.error.banned',
+  USER_NOT_FOUND: 'auth.error.user_not_found',
+  OTP_INVALID: 'auth.error.otp_invalid',
+  OTP_EXPIRED: 'auth.error.otp_expired',
+  SESSION_EXPIRED: 'auth.error.session_expired',
 };
 
 export const UserErrors = {
