@@ -152,33 +152,4 @@ export class UsersService {
 
     return { message: CommonSuccess.OPERATION_SUCCESS };
   }
-
-  async findAll() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        avatar: true,
-        role: true,
-        isEmailVerified: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async create(data: any) {
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    return this.prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: hashedPassword,
-        role: data.role,
-        phone: data.phone,
-      },
-    });
-  }
 }
