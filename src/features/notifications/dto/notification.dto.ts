@@ -63,6 +63,6 @@ export class CreateNotificationDto {
   @ApiProperty({ enum: NotificationType })
   type!: NotificationType;
 
-  @ApiProperty({ type: 'object', required: false })
+  @ApiProperty({ required: false })
   data?: Record<string, any>;
 }

@@ -126,7 +126,7 @@ export class SendMessageDto {
   @IsNotEmpty()
   mediaUrl?: string;
 
-  @ApiProperty({ type: 'object', required: false })
+  @ApiProperty({ required: false })
   @IsOptional()
   metadata?: MediaMetadataDto | LocationMetadataDto | Record<string, any>;
 
