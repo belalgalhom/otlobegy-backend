@@ -100,4 +100,18 @@ export class UsersController {
   deleteAccount(@CurrentUser() user: JwtAccessPayload) {
     return this.userService.deleteAccount(user.sub);
   }
+
+  @Get()
+  @ApiOperation({ summary: 'List all users (Admin only)' })
+  @ApiResponse({ status: 200, description: 'List of users returned' })
+  findAll() {
+    return this.userService.findAll();
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create a user (Admin only)' })
+  @ApiResponse({ status: 201, description: 'User created successfully' })
+  create(@Body() data: any) {
+    return this.userService.create(data);
+  }
 }
